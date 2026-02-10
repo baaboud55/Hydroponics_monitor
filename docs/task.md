@@ -1,0 +1,29 @@
+# Hydroponic Automation Project
+
+- [/] Requirements Gathering
+    - [x] Define hardware scope: **Hydromisc (ESP32 based)**
+    - [x] Identify key sensors: pH, EC, Water Level (supported by Hydromisc)
+    - [x] Identify actuators: Solenoids, Pumps, Peristaltic Dosing (supported by Hydromisc)
+    - [ ] Determine software stack (Web Dashboard, Mobile App, Local/Cloud)
+- [ ] System Design
+    - [x] **Research Hydromisc Pinout** (Completed)
+    - [ ] Design Mobile-First UI (PWA)
+    - [ ] Define API for Mobile App <-> Backend
+- [ ] Implementation - Firmware (ESP32/PlatformIO)
+    - [ ] Initialize PlatformIO Project
+    - [ ] Implement **WiFiManager** (User friendly WiFi setup)
+    - [ ] Implement Shift Register Driver (74HC595)
+    - [ ] Implement MQTT Client & Auto-Discovery
+    - [ ] Implement Sensor/Actuator Logic
+- [ ] Implementation - Backend (Python)
+    - [x] Setup FastAPI + MQTT
+    - [x] Implement "Smart Rules" (Consumer friendly presets)
+- [ ] Implementation - Mobile App (PWA/React)
+    - [x] Initialize React Vite (configured as PWA)
+    - [x] **Create Dashboard Components** (Expanded to support all sensors)
+    - [ ] Create Control Panel (Pump/Light toggles)
+    - [ ] Create Calibration Wizard (pH/EC)
+    - [ ] Implement API/Socket connection to Backend
+- [ ] Verification
+    - [ ] Test Scenarios (Low water, High Temp, etc.)
+    - [ ] End-to-end simulation
