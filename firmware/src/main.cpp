@@ -2,6 +2,7 @@
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
 #include <HydroActuators.h>
 #include <HydroMQTT.h>
+#include <HydroDosingPumps.h>
 
 // Shift Register Pins
 #define PIN_SR_DATA 26
@@ -9,12 +10,19 @@
 #define PIN_SR_LATCH 14
 #define PIN_SR_CLEAR 12
 
+// Dosing Pump Pins
+#define PIN_DOSING_A 18
+#define PIN_DOSING_B 19
+#define PIN_DOSING_PH 21
+#define PIN_DOSING_AUX 22
+
 // MQTT Settings (Hardcoded for now, should be dynamic later)
 #define MQTT_SERVER "test.mosquitto.org"
 #define MQTT_PORT 1883
 #define DEVICE_ID "hydro-misc-01"
 
 HydroActuators actuators(PIN_SR_DATA, PIN_SR_CLOCK, PIN_SR_LATCH, PIN_SR_CLEAR);
+HydroDosingPumps dosingPumps(PIN_DOSING_A, PIN_DOSING_B, PIN_DOSING_PH, PIN_DOSING_AUX);
 WiFiClient espClient;
 HydroMQTT mqtt(espClient, MQTT_SERVER, MQTT_PORT, DEVICE_ID);
 
@@ -60,6 +68,24 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
        actuators.setDebugLed(state);
        actuators.commit();
   }
+  // Dosing pump control: hydro/hydro-misc-01/control/dosing/0/speed or /dose
+  else if (topicStr.indexOf("/control/dosing/") > 0) {
+      // Extract pump index
+      int dosingIdx = topicStr.indexOf("/control/dosing/");
+      String afterDosing = topicStr.substring(dosingIdx + 16); // "/control/dosing/" = 16 chars
+      int slashPos = afterDosing.indexOf('/');
+      int pumpIndex = afterDosing.substring(0, slashPos).toInt();
+      String command = afterDosing.substring(slashPos + 1);
+      
+      if (command == "speed") {
+          int speed = payloadStr.toInt();
+          dosingPumps.setSpeed(pumpIndex, speed);
+      }
+      else if (command == "dose") {
+          unsigned long duration = payloadStr.toInt();
+          dosingPumps.dose(pumpIndex, duration);
+      }
+  }
 }
 
 void setup() {
@@ -71,6 +97,9 @@ void setup() {
   actuators.setDebugLed(true);
   actuators.commit();
   Serial.println("Actuators Initialized");
+  
+  // Initialize Dosing Pumps
+  dosingPumps.begin();
 
   WiFiManager wm;
   
@@ -100,6 +129,7 @@ void setup() {
 
 void loop() {
   mqtt.loop();
+  dosingPumps.update(); // Handle timed dosing
 
   // Blink Debug LED to show activity
   static bool ledState = false;
@@ -121,6 +151,12 @@ void loop() {
           mqtt.publishSensor("ph2_raw", analogRead(39));
           mqtt.publishSensor("ec1_raw", analogRead(34));
           mqtt.publishSensor("ec2_raw", analogRead(33));
+          
+          // Publish Dosing Pump Status
+          for (int i = 0; i < 4; i++) {
+              String pumpName = "dosing" + String(i) + "_speed";
+              mqtt.publishSensor(pumpName.c_str(), dosingPumps.getSpeed(i));
+          }
       }
   }
 }

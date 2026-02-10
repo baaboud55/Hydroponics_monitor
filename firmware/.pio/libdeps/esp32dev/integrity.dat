@@ -1,0 +1,5 @@
+milesburton/DallasTemperature @ ^3.11.0
+bblanchon/ArduinoJson @ ^6.21.0
+tzapu/WiFiManager @ ^2.0.17
+knolleary/PubSubClient @ ^2.8
+paulstoffregen/OneWire @ ^2.3.7
