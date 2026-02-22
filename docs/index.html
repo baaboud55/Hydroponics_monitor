@@ -1,30 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>HydroMonitor — Autonomous Hydroponics Control</title>
-    <meta name="description" content="HydroMonitor is an intelligent hydroponics monitoring and autonomous dosing system. Real-time sensor dashboards, PID control, and MQTT-based ESP32 integration." />
+    <meta name="description"
+        content="HydroMonitor is an intelligent hydroponics monitoring and autonomous dosing system. Real-time sensor dashboards, PID control, and MQTT-based ESP32 integration." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        :root {
-            --green:   #22c55e;
-            --green-d: #16a34a;
-            --teal:    #14b8a6;
-            --blue:    #3b82f6;
-            --bg:      #060d0a;
-            --surface: #0d1f17;
-            --card:    #112118;
-            --border:  #1e3a2a;
-            --muted:   #6b9a7a;
-            --text:    #e8f5ee;
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
-        html { scroll-behavior: smooth; }
+        :root {
+            --green: #22c55e;
+            --green-d: #16a34a;
+            --teal: #14b8a6;
+            --blue: #3b82f6;
+            --bg: #060d0a;
+            --surface: #0d1f17;
+            --card: #112118;
+            --border: #1e3a2a;
+            --muted: #6b9a7a;
+            --text: #e8f5ee;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
 
         body {
             font-family: 'Inter', sans-serif;
@@ -36,122 +47,222 @@
 
         /* ── NAVBAR ─────────────────────────────────── */
         nav {
-            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-            display: flex; align-items: center; justify-content: space-between;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             padding: 1rem 2rem;
             background: rgba(6, 13, 10, 0.80);
             backdrop-filter: blur(14px);
             border-bottom: 1px solid var(--border);
         }
+
         .nav-logo {
-            display: flex; align-items: center; gap: 0.6rem;
-            font-weight: 700; font-size: 1.1rem; letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: -0.02em;
             color: var(--text);
         }
+
         .nav-dot {
-            width: 10px; height: 10px; border-radius: 50%;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
             background: var(--green);
             box-shadow: 0 0 10px var(--green);
             animation: pulse 2s infinite;
         }
+
         .nav-cta {
-            display: inline-flex; align-items: center; gap: 0.5rem;
-            background: var(--green); color: #fff;
-            font-weight: 600; font-size: 0.85rem;
-            padding: 0.5rem 1.1rem; border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--green);
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 0.5rem 1.1rem;
+            border-radius: 8px;
             text-decoration: none;
             transition: background 0.2s, transform 0.15s;
         }
-        .nav-cta:hover { background: var(--green-d); transform: translateY(-1px); }
+
+        .nav-cta:hover {
+            background: var(--green-d);
+            transform: translateY(-1px);
+        }
 
         /* ── HERO ───────────────────────────────────── */
         .hero {
             min-height: 100vh;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             text-align: center;
             padding: 7rem 2rem 5rem;
             position: relative;
             overflow: hidden;
         }
+
         .hero-glow {
             position: absolute;
-            top: -10%; left: 50%; transform: translateX(-50%);
-            width: 700px; height: 700px; border-radius: 50%;
-            background: radial-gradient(circle, rgba(34,197,94,0.13) 0%, transparent 70%);
+            top: -10%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 700px;
+            height: 700px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(34, 197, 94, 0.13) 0%, transparent 70%);
             pointer-events: none;
         }
+
         .hero-badge {
-            display: inline-flex; align-items: center; gap: 0.4rem;
-            background: rgba(34,197,94,0.12); border: 1px solid rgba(34,197,94,0.3);
-            color: var(--green); font-size: 0.78rem; font-weight: 600;
-            padding: 0.35rem 0.9rem; border-radius: 999px;
-            margin-bottom: 1.8rem; letter-spacing: 0.04em; text-transform: uppercase;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(34, 197, 94, 0.12);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: var(--green);
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 0.35rem 0.9rem;
+            border-radius: 999px;
+            margin-bottom: 1.8rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
         }
+
         h1 {
             font-size: clamp(2.8rem, 6vw, 5rem);
-            font-weight: 800; line-height: 1.08;
+            font-weight: 800;
+            line-height: 1.08;
             letter-spacing: -0.04em;
             background: linear-gradient(135deg, #e8f5ee 40%, #22c55e);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             background-clip: text;
             margin-bottom: 1.4rem;
         }
+
         .hero-sub {
-            max-width: 600px; margin: 0 auto 2.8rem;
-            font-size: 1.15rem; line-height: 1.7;
+            max-width: 600px;
+            margin: 0 auto 2.8rem;
+            font-size: 1.15rem;
+            line-height: 1.7;
             color: var(--muted);
         }
-        .cta-group { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+        .cta-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
         .btn-primary {
-            display: inline-flex; align-items: center; gap: 0.6rem;
-            background: var(--green); color: #fff;
-            font-weight: 700; font-size: 1rem;
-            padding: 0.9rem 2rem; border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            background: var(--green);
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            padding: 0.9rem 2rem;
+            border-radius: 12px;
             text-decoration: none;
-            box-shadow: 0 0 30px rgba(34,197,94,0.35);
+            box-shadow: 0 0 30px rgba(34, 197, 94, 0.35);
             transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
         }
+
         .btn-primary:hover {
-            background: var(--green-d); transform: translateY(-2px);
-            box-shadow: 0 0 45px rgba(34,197,94,0.5);
+            background: var(--green-d);
+            transform: translateY(-2px);
+            box-shadow: 0 0 45px rgba(34, 197, 94, 0.5);
         }
+
         .btn-secondary {
-            display: inline-flex; align-items: center; gap: 0.6rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
             background: transparent;
-            border: 1px solid var(--border); color: var(--text);
-            font-weight: 600; font-size: 1rem;
-            padding: 0.9rem 2rem; border-radius: 12px;
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-weight: 600;
+            font-size: 1rem;
+            padding: 0.9rem 2rem;
+            border-radius: 12px;
             text-decoration: none;
             transition: border-color 0.2s, background 0.2s;
         }
-        .btn-secondary:hover { border-color: var(--green); background: rgba(34,197,94,0.06); }
+
+        .btn-secondary:hover {
+            border-color: var(--green);
+            background: rgba(34, 197, 94, 0.06);
+        }
 
         /* ── METRICS STRIP ──────────────────────────── */
         .metrics {
-            display: flex; justify-content: center; flex-wrap: wrap; gap: 2rem;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 2rem;
             padding: 0 2rem 5rem;
         }
+
         .metric {
             text-align: center;
         }
+
         .metric-val {
-            font-size: 2rem; font-weight: 800; color: var(--green);
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--green);
         }
-        .metric-lbl { font-size: 0.8rem; color: var(--muted); margin-top: 0.2rem; }
+
+        .metric-lbl {
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-top: 0.2rem;
+        }
 
         /* ── SECTION COMMONS ────────────────────────── */
-        section { padding: 5rem 2rem; max-width: 1100px; margin: 0 auto; }
-        .section-tag {
-            font-size: 0.78rem; font-weight: 600; text-transform: uppercase;
-            letter-spacing: 0.08em; color: var(--green); margin-bottom: 0.75rem;
+        section {
+            padding: 5rem 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
         }
+
+        .section-tag {
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--green);
+            margin-bottom: 0.75rem;
+        }
+
         .section-title {
-            font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800;
-            letter-spacing: -0.03em; line-height: 1.15;
+            font-size: clamp(1.8rem, 4vw, 2.6rem);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1.15;
             margin-bottom: 1rem;
         }
-        .section-sub { color: var(--muted); font-size: 1.05rem; max-width: 560px; line-height: 1.7; }
+
+        .section-sub {
+            color: var(--muted);
+            font-size: 1.05rem;
+            max-width: 560px;
+            line-height: 1.7;
+        }
 
         /* ── FEATURE GRID ───────────────────────────── */
         .features-grid {
@@ -160,6 +271,7 @@
             gap: 1.25rem;
             margin-top: 3.5rem;
         }
+
         .feature-card {
             background: var(--card);
             border: 1px solid var(--border);
@@ -167,21 +279,58 @@
             padding: 1.8rem;
             transition: border-color 0.25s, transform 0.2s;
         }
-        .feature-card:hover { border-color: rgba(34,197,94,0.4); transform: translateY(-3px); }
+
+        .feature-card:hover {
+            border-color: rgba(34, 197, 94, 0.4);
+            transform: translateY(-3px);
+        }
+
         .feature-icon {
-            width: 44px; height: 44px; border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 1.3rem;
             margin-bottom: 1.1rem;
         }
-        .icon-green  { background: rgba(34,197,94,0.15); }
-        .icon-teal   { background: rgba(20,184,166,0.15); }
-        .icon-blue   { background: rgba(59,130,246,0.15); }
-        .icon-amber  { background: rgba(245,158,11,0.15); }
-        .icon-violet { background: rgba(139,92,246,0.15); }
-        .icon-pink   { background: rgba(236,72,153,0.15); }
-        .feature-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.5rem; }
-        .feature-card p  { color: var(--muted); font-size: 0.9rem; line-height: 1.65; }
+
+        .icon-green {
+            background: rgba(34, 197, 94, 0.15);
+        }
+
+        .icon-teal {
+            background: rgba(20, 184, 166, 0.15);
+        }
+
+        .icon-blue {
+            background: rgba(59, 130, 246, 0.15);
+        }
+
+        .icon-amber {
+            background: rgba(245, 158, 11, 0.15);
+        }
+
+        .icon-violet {
+            background: rgba(139, 92, 246, 0.15);
+        }
+
+        .icon-pink {
+            background: rgba(236, 72, 153, 0.15);
+        }
+
+        .feature-card h3 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-card p {
+            color: var(--muted);
+            font-size: 0.9rem;
+            line-height: 1.65;
+        }
 
         /* ── SENSOR SHOWCASE ────────────────────────── */
         .sensor-section {
@@ -189,43 +338,87 @@
             border-top: 1px solid var(--border);
             border-bottom: 1px solid var(--border);
         }
-        .sensor-section > div { max-width: 1100px; margin: 0 auto; padding: 5rem 2rem; }
+
+        .sensor-section>div {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 5rem 2rem;
+        }
+
         .sensor-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 1rem; margin-top: 3rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1rem;
+            margin-top: 3rem;
         }
+
         .sensor-pill {
-            background: var(--card); border: 1px solid var(--border);
-            border-radius: 12px; padding: 1.2rem 1rem; text-align: center;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.2rem 1rem;
+            text-align: center;
         }
+
         .sensor-pill .s-val {
-            font-size: 1.6rem; font-weight: 800; color: var(--green);
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--green);
         }
-        .sensor-pill .s-lbl { font-size: 0.78rem; color: var(--muted); margin-top: 0.2rem; }
-        .sensor-pill .s-unit { font-size: 0.72rem; color: var(--muted); }
+
+        .sensor-pill .s-lbl {
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-top: 0.2rem;
+        }
+
+        .sensor-pill .s-unit {
+            font-size: 0.72rem;
+            color: var(--muted);
+        }
 
         /* ── TECH STACK ─────────────────────────────── */
         .tech-list {
-            display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 2.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: 2.5rem;
         }
+
         .tech-tag {
-            background: var(--card); border: 1px solid var(--border);
-            border-radius: 8px; padding: 0.45rem 1rem;
-            font-size: 0.85rem; font-weight: 500; color: var(--muted);
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.45rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--muted);
         }
 
         /* ── CTA BANNER ─────────────────────────────── */
         .cta-banner {
-            background: linear-gradient(135deg, rgba(34,197,94,0.12), rgba(20,184,166,0.08));
-            border: 1px solid rgba(34,197,94,0.25);
-            border-radius: 24px; padding: 4rem 2rem;
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.12), rgba(20, 184, 166, 0.08));
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            border-radius: 24px;
+            padding: 4rem 2rem;
             text-align: center;
             margin: 0 2rem 5rem;
             max-width: 1100px;
-            margin-left: auto; margin-right: auto;
+            margin-left: auto;
+            margin-right: auto;
         }
-        .cta-banner h2 { font-size: 2rem; font-weight: 800; margin-bottom: 1rem; letter-spacing: -0.03em; }
-        .cta-banner p  { color: var(--muted); margin-bottom: 2rem; }
+
+        .cta-banner h2 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            letter-spacing: -0.03em;
+        }
+
+        .cta-banner p {
+            color: var(--muted);
+            margin-bottom: 2rem;
+        }
 
         /* ── FOOTER ─────────────────────────────────── */
         footer {
@@ -238,199 +431,241 @@
 
         /* ── ANIMATION ──────────────────────────────── */
         @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50%       { opacity: 0.6; transform: scale(0.88); }
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.6;
+                transform: scale(0.88);
+            }
         }
+
         @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(24px); }
-            to   { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        .fade-up { animation: fadeUp 0.7s ease both; }
-        .fade-up-d1 { animation-delay: 0.15s; }
-        .fade-up-d2 { animation-delay: 0.3s; }
-        .fade-up-d3 { animation-delay: 0.45s; }
+
+        .fade-up {
+            animation: fadeUp 0.7s ease both;
+        }
+
+        .fade-up-d1 {
+            animation-delay: 0.15s;
+        }
+
+        .fade-up-d2 {
+            animation-delay: 0.3s;
+        }
+
+        .fade-up-d3 {
+            animation-delay: 0.45s;
+        }
     </style>
 </head>
+
 <body>
 
-<!-- NAVBAR -->
-<nav>
-    <div class="nav-logo">
-        <span class="nav-dot"></span>
-        HydroMonitor
-    </div>
-    <a class="nav-cta" href="/HydroMonitor/app/">
-        Live Demo &rarr;
-    </a>
-</nav>
-
-<!-- HERO -->
-<div class="hero">
-    <div class="hero-glow"></div>
-    <div class="hero-badge fade-up">
-        <span class="nav-dot" style="width:7px;height:7px;box-shadow:none;animation:none;"></span>
-        Autonomous Hydroponics Control
-    </div>
-    <h1 class="fade-up fade-up-d1">Smart Monitoring.<br/>Autonomous Dosing.</h1>
-    <p class="hero-sub fade-up fade-up-d2">
-        HydroMonitor gives your hydroponic system a brain. It continuously monitors pH, EC, temperature, and environment — then automatically doses and adjusts to keep your plants in the perfect zone.
-    </p>
-    <div class="cta-group fade-up fade-up-d3">
-        <a class="btn-primary" href="/HydroMonitor/app/">
-            ⚡ Experience the Dashboard
+    <!-- NAVBAR -->
+    <nav>
+        <div class="nav-logo">
+            <span class="nav-dot"></span>
+            HydroMonitor
+        </div>
+        <a class="nav-cta" href="/Hydroponics_monitor/app/">
+            Live Demo &rarr;
         </a>
-        <a class="btn-secondary" href="https://github.com/baaboud55/HydroMonitor" target="_blank" rel="noopener">
-            View on GitHub &nearr;
+    </nav>
+
+    <!-- HERO -->
+    <div class="hero">
+        <div class="hero-glow"></div>
+        <div class="hero-badge fade-up">
+            <span class="nav-dot" style="width:7px;height:7px;box-shadow:none;animation:none;"></span>
+            Autonomous Hydroponics Control
+        </div>
+        <h1 class="fade-up fade-up-d1">Smart Monitoring.<br />Autonomous Dosing.</h1>
+        <p class="hero-sub fade-up fade-up-d2">
+            HydroMonitor gives your hydroponic system a brain. It continuously monitors pH, EC, temperature, and
+            environment — then automatically doses and adjusts to keep your plants in the perfect zone.
+        </p>
+        <div class="cta-group fade-up fade-up-d3">
+            <a class="btn-primary" href="/Hydroponics_monitor/app/">
+                ⚡ Experience the Dashboard
+            </a>
+            <a class="btn-secondary" href="https://github.com/baaboud55/Hydroponics_monitor" target="_blank"
+                rel="noopener">
+                View on GitHub &nearr;
+            </a>
+        </div>
+    </div>
+
+    <!-- METRICS -->
+    <div class="metrics">
+        <div class="metric">
+            <div class="metric-val">7</div>
+            <div class="metric-lbl">Sensors Tracked</div>
+        </div>
+        <div class="metric">
+            <div class="metric-val">PID</div>
+            <div class="metric-lbl">Closed-Loop Control</div>
+        </div>
+        <div class="metric">
+            <div class="metric-val">MQTT</div>
+            <div class="metric-lbl">Real-Time Comms</div>
+        </div>
+        <div class="metric">
+            <div class="metric-val">ESP32</div>
+            <div class="metric-lbl">Firmware Platform</div>
+        </div>
+        <div class="metric">
+            <div class="metric-val">PWA</div>
+            <div class="metric-lbl">Install on Any Device</div>
+        </div>
+    </div>
+
+    <!-- FEATURES -->
+    <section>
+        <div class="section-tag">Capabilities</div>
+        <h2 class="section-title">Everything your system needs</h2>
+        <p class="section-sub">From raw sensor readings to fully autonomous nutrient management — all in one integrated
+            platform.</p>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon icon-green">🌡</div>
+                <h3>Real-Time Sensor Monitoring</h3>
+                <p>Live readings of pH, EC, water temperature, reservoir level, air temperature, humidity, and VPD —
+                    streamed directly to your dashboard via WebSocket.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon icon-teal">🧪</div>
+                <h3>Autonomous pH & EC Dosing</h3>
+                <p>PID-controlled dosing pumps precisely deliver pH-up, pH-down, and nutrient solutions to maintain your
+                    configured target values within tight tolerances.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon icon-blue">⚙️</div>
+                <h3>Configurable Automation Rules</h3>
+                <p>Set target values, tolerance bands, dose limits, and PID tuning constants via the dashboard UI with
+                    instant backend persistence — no config files to edit.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon icon-amber">📡</div>
+                <h3>ESP32 MQTT Firmware</h3>
+                <p>Custom PlatformIO firmware running on ESP32 communicates over MQTT. Supports solenoid valve control,
+                    dosing pump PWM, and multi-sensor polling.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon icon-violet">📊</div>
+                <h3>Dosing History & Logs</h3>
+                <p>Every automatic and manual dose is recorded with timestamps, pump index, and duration so you can
+                    audit and tune the system over time.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon icon-pink">📲</div>
+                <h3>Progressive Web App</h3>
+                <p>Install HydroMonitor on your phone or tablet like a native app. Works on any device — no app store
+                    required. Builds on React with Vite for instant load times.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SENSOR SHOWCASE -->
+    <div class="sensor-section">
+        <div>
+            <div class="section-tag">Live Parameters</div>
+            <h2 class="section-title">Every value, at a glance</h2>
+            <p class="section-sub">HydroMonitor tracks all parameters critical to a healthy crop — from root zone
+                chemistry to canopy environment.</p>
+            <div class="sensor-grid">
+                <div class="sensor-pill">
+                    <div class="s-val">6.0</div>
+                    <div class="s-unit">pH</div>
+                    <div class="s-lbl">pH Level</div>
+                </div>
+                <div class="sensor-pill">
+                    <div class="s-val">1.5</div>
+                    <div class="s-unit">mS/cm</div>
+                    <div class="s-lbl">EC (Nutrients)</div>
+                </div>
+                <div class="sensor-pill">
+                    <div class="s-val">22.5</div>
+                    <div class="s-unit">°C</div>
+                    <div class="s-lbl">Water Temp</div>
+                </div>
+                <div class="sensor-pill">
+                    <div class="s-val">85</div>
+                    <div class="s-unit">%</div>
+                    <div class="s-lbl">Reservoir Level</div>
+                </div>
+                <div class="sensor-pill">
+                    <div class="s-val">26</div>
+                    <div class="s-unit">°C</div>
+                    <div class="s-lbl">Air Temp</div>
+                </div>
+                <div class="sensor-pill">
+                    <div class="s-val">60</div>
+                    <div class="s-unit">%</div>
+                    <div class="s-lbl">Humidity</div>
+                </div>
+                <div class="sensor-pill">
+                    <div class="s-val">1.2</div>
+                    <div class="s-unit">kPa</div>
+                    <div class="s-lbl">VPD</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TECH STACK -->
+    <section>
+        <div class="section-tag">Technology</div>
+        <h2 class="section-title">Built on proven tech</h2>
+        <p class="section-sub">A modern full-stack architecture — from the microcontroller to the browser — using open,
+            well-supported technologies.</p>
+        <div class="tech-list">
+            <span class="tech-tag">React 18</span>
+            <span class="tech-tag">Vite</span>
+            <span class="tech-tag">Tailwind CSS</span>
+            <span class="tech-tag">FastAPI</span>
+            <span class="tech-tag">Python</span>
+            <span class="tech-tag">WebSocket</span>
+            <span class="tech-tag">MQTT</span>
+            <span class="tech-tag">ESP32</span>
+            <span class="tech-tag">PlatformIO</span>
+            <span class="tech-tag">C++</span>
+            <span class="tech-tag">PID Control</span>
+            <span class="tech-tag">PWA</span>
+            <span class="tech-tag">Recharts</span>
+            <span class="tech-tag">Lucide Icons</span>
+        </div>
+    </section>
+
+    <!-- CTA BANNER -->
+    <div class="cta-banner">
+        <h2>Ready to see it in action?</h2>
+        <p>Explore the interactive dashboard — no installation required.</p>
+        <a class="btn-primary" href="/Hydroponics_monitor/app/" style="display:inline-flex;">
+            ⚡ Launch the Dashboard
         </a>
     </div>
-</div>
 
-<!-- METRICS -->
-<div class="metrics">
-    <div class="metric">
-        <div class="metric-val">7</div>
-        <div class="metric-lbl">Sensors Tracked</div>
-    </div>
-    <div class="metric">
-        <div class="metric-val">PID</div>
-        <div class="metric-lbl">Closed-Loop Control</div>
-    </div>
-    <div class="metric">
-        <div class="metric-val">MQTT</div>
-        <div class="metric-lbl">Real-Time Comms</div>
-    </div>
-    <div class="metric">
-        <div class="metric-val">ESP32</div>
-        <div class="metric-lbl">Firmware Platform</div>
-    </div>
-    <div class="metric">
-        <div class="metric-val">PWA</div>
-        <div class="metric-lbl">Install on Any Device</div>
-    </div>
-</div>
-
-<!-- FEATURES -->
-<section>
-    <div class="section-tag">Capabilities</div>
-    <h2 class="section-title">Everything your system needs</h2>
-    <p class="section-sub">From raw sensor readings to fully autonomous nutrient management — all in one integrated platform.</p>
-
-    <div class="features-grid">
-        <div class="feature-card">
-            <div class="feature-icon icon-green">🌡</div>
-            <h3>Real-Time Sensor Monitoring</h3>
-            <p>Live readings of pH, EC, water temperature, reservoir level, air temperature, humidity, and VPD — streamed directly to your dashboard via WebSocket.</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon icon-teal">🧪</div>
-            <h3>Autonomous pH & EC Dosing</h3>
-            <p>PID-controlled dosing pumps precisely deliver pH-up, pH-down, and nutrient solutions to maintain your configured target values within tight tolerances.</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon icon-blue">⚙️</div>
-            <h3>Configurable Automation Rules</h3>
-            <p>Set target values, tolerance bands, dose limits, and PID tuning constants via the dashboard UI with instant backend persistence — no config files to edit.</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon icon-amber">📡</div>
-            <h3>ESP32 MQTT Firmware</h3>
-            <p>Custom PlatformIO firmware running on ESP32 communicates over MQTT. Supports solenoid valve control, dosing pump PWM, and multi-sensor polling.</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon icon-violet">📊</div>
-            <h3>Dosing History & Logs</h3>
-            <p>Every automatic and manual dose is recorded with timestamps, pump index, and duration so you can audit and tune the system over time.</p>
-        </div>
-        <div class="feature-card">
-            <div class="feature-icon icon-pink">📲</div>
-            <h3>Progressive Web App</h3>
-            <p>Install HydroMonitor on your phone or tablet like a native app. Works on any device — no app store required. Builds on React with Vite for instant load times.</p>
-        </div>
-    </div>
-</section>
-
-<!-- SENSOR SHOWCASE -->
-<div class="sensor-section">
-    <div>
-        <div class="section-tag">Live Parameters</div>
-        <h2 class="section-title">Every value, at a glance</h2>
-        <p class="section-sub">HydroMonitor tracks all parameters critical to a healthy crop — from root zone chemistry to canopy environment.</p>
-        <div class="sensor-grid">
-            <div class="sensor-pill">
-                <div class="s-val">6.0</div>
-                <div class="s-unit">pH</div>
-                <div class="s-lbl">pH Level</div>
-            </div>
-            <div class="sensor-pill">
-                <div class="s-val">1.5</div>
-                <div class="s-unit">mS/cm</div>
-                <div class="s-lbl">EC (Nutrients)</div>
-            </div>
-            <div class="sensor-pill">
-                <div class="s-val">22.5</div>
-                <div class="s-unit">°C</div>
-                <div class="s-lbl">Water Temp</div>
-            </div>
-            <div class="sensor-pill">
-                <div class="s-val">85</div>
-                <div class="s-unit">%</div>
-                <div class="s-lbl">Reservoir Level</div>
-            </div>
-            <div class="sensor-pill">
-                <div class="s-val">26</div>
-                <div class="s-unit">°C</div>
-                <div class="s-lbl">Air Temp</div>
-            </div>
-            <div class="sensor-pill">
-                <div class="s-val">60</div>
-                <div class="s-unit">%</div>
-                <div class="s-lbl">Humidity</div>
-            </div>
-            <div class="sensor-pill">
-                <div class="s-val">1.2</div>
-                <div class="s-unit">kPa</div>
-                <div class="s-lbl">VPD</div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- TECH STACK -->
-<section>
-    <div class="section-tag">Technology</div>
-    <h2 class="section-title">Built on proven tech</h2>
-    <p class="section-sub">A modern full-stack architecture — from the microcontroller to the browser — using open, well-supported technologies.</p>
-    <div class="tech-list">
-        <span class="tech-tag">React 18</span>
-        <span class="tech-tag">Vite</span>
-        <span class="tech-tag">Tailwind CSS</span>
-        <span class="tech-tag">FastAPI</span>
-        <span class="tech-tag">Python</span>
-        <span class="tech-tag">WebSocket</span>
-        <span class="tech-tag">MQTT</span>
-        <span class="tech-tag">ESP32</span>
-        <span class="tech-tag">PlatformIO</span>
-        <span class="tech-tag">C++</span>
-        <span class="tech-tag">PID Control</span>
-        <span class="tech-tag">PWA</span>
-        <span class="tech-tag">Recharts</span>
-        <span class="tech-tag">Lucide Icons</span>
-    </div>
-</section>
-
-<!-- CTA BANNER -->
-<div class="cta-banner">
-    <h2>Ready to see it in action?</h2>
-    <p>Explore the interactive dashboard — no installation required.</p>
-    <a class="btn-primary" href="/HydroMonitor/app/" style="display:inline-flex;">
-        ⚡ Launch the Dashboard
-    </a>
-</div>
-
-<!-- FOOTER -->
-<footer>
-    <p>HydroMonitor &mdash; Autonomous Hydroponics Control System &mdash; &copy; 2025</p>
-</footer>
+    <!-- FOOTER -->
+    <footer>
+        <p>HydroMonitor &mdash; Autonomous Hydroponics Control System &mdash; &copy; 2025</p>
+    </footer>
 
 </body>
+
 </html>
