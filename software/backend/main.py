@@ -77,7 +77,9 @@ client.on_message = on_message
 # --- FastAPI Lifecycle ---
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
+    # Startup: launch background control loop
+    asyncio.create_task(control_loop())
+    print("Autonomous control loop started")
     try:
         # client.connect(MQTT_BROKER, MQTT_PORT, 60)
         # client.loop_start()
@@ -129,7 +131,7 @@ class ManualDoseRequest(BaseModel):
 @app.get("/api/config")
 def get_configuration():
     """Get complete system configuration"""
-    return config_mgr.get_config().dict()
+    return config_mgr.get_config().model_dump()
 
 @app.post("/api/config/parameter")
 def update_parameter_config(config: ConfigUpdate):
@@ -249,11 +251,7 @@ async def control_loop():
         # Run control loop every 5 seconds
         await asyncio.sleep(5)
 
-@app.on_event("startup")
-async def startup_event():
-    """Start background control loop on server startup"""
-    asyncio.create_task(control_loop())
-    print("Autonomous control loop started")
+# NOTE: control loop is started inside the lifespan context manager above.
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):

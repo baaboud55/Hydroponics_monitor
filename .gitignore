@@ -1,0 +1,42 @@
+# ===========================
+# Python
+# ===========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+.venv/
+venv/
+env/
+.env
+
+# ===========================
+# Node / Frontend
+# ===========================
+node_modules/
+software/frontend/dist/
+
+# ===========================
+# Build artifacts (firmware)
+# ===========================
+firmware/.pio/
+firmware/build/
+*.bin
+*.elf
+*.map
+
+# ===========================
+# Runtime / Machine-specific config
+# ===========================
+software/backend/config.json
+
+# ===========================
+# IDE / OS
+# ===========================
+.vscode/
+.idea/
+*.DS_Store
+Thumbs.db
+desktop.ini
