@@ -59,6 +59,35 @@ export const api = {
         return await response.json();
     },
 
+    // --- Actuator Controls ---
+
+    // Toggle solenoid valve (index 0-7)
+    toggleSolenoid: async (index, state) => {
+        const response = await fetch(`${API_BASE_URL}/api/actuators/solenoid/${index}/${state}`, {
+            method: 'POST'
+        });
+        if (!response.ok) throw new Error(`Failed to toggle solenoid ${index}`);
+        return await response.json();
+    },
+
+    // Toggle circulation pump (index 0-5)
+    togglePump: async (index, state) => {
+        const response = await fetch(`${API_BASE_URL}/api/actuators/pump/${index}/${state}`, {
+            method: 'POST'
+        });
+        if (!response.ok) throw new Error(`Failed to toggle pump ${index}`);
+        return await response.json();
+    },
+
+    // Toggle main pump
+    toggleMainPump: async (state) => {
+        const response = await fetch(`${API_BASE_URL}/api/actuators/main_pump/${state}`, {
+            method: 'POST'
+        });
+        if (!response.ok) throw new Error('Failed to toggle main pump');
+        return await response.json();
+    },
+
     // WebSocket connection for real-time updates
     connectWebSocket: (onMessage) => {
         const ws = new WebSocket(`ws://localhost:8000/ws`);
@@ -78,8 +107,8 @@ export const api = {
 
         ws.onclose = () => {
             console.log('WebSocket disconnected');
-            // Attempt reconnection after 3 seconds
-            setTimeout(() => connectWebSocket(onMessage), 3000);
+            // Fixed: was calling undefined `connectWebSocket`, now calls `api.connectWebSocket`
+            setTimeout(() => api.connectWebSocket(onMessage), 3000);
         };
 
         return ws;

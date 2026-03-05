@@ -1,74 +1,114 @@
-import React, { useState } from 'react';
-import { Power, Droplets, Zap, PlayCircle } from 'lucide-react';
-import { useBackendAPI } from '../hooks/useWebSocket';
+import React, { useState, useEffect } from 'react';
+import { Power, Droplets, Zap, PlayCircle, CheckCircle, XCircle } from 'lucide-react';
+import { api } from '../services/api';
 
-export default function ControlPanel() {
-    const { manualDose } = useBackendAPI();
+export default function ControlPanel({ systemData }) {
+    // Initialise state from WS data so it survives reconnects/refreshes
+    const [solenoids, setSolenoids] = useState(systemData?.solenoids ?? Array(8).fill(false));
+    const [pumps, setPumps] = useState(systemData?.circulation_pumps ?? Array(6).fill(false));
+    const [mainPump, setMainPump] = useState(systemData?.main_pump ?? false);
 
-    // State for solenoids (8 valves)
-    const [solenoids, setSolenoids] = useState(Array(8).fill(false));
-
-    // State for pumps (6 regular + 1 big)
-    const [pumps, setPumps] = useState(Array(6).fill(false));
-    const [bigPump, setBigPump] = useState(false);
-
-    // State for dosing pumps (4 pumps with speed)
+    // Dosing pump UI state (speed + name, not tracked on backend for now)
     const [dosingPumps, setDosingPumps] = useState([
         { name: 'Pump A', speed: 0, active: false },
         { name: 'Pump B', speed: 0, active: false },
-        { name: 'pH', speed: 0, active: false },
+        { name: 'pH Up/Down', speed: 0, active: false },
         { name: 'Aux', speed: 0, active: false },
     ]);
 
-    // Toggle solenoid
-    const toggleSolenoid = (index) => {
-        const newState = [...solenoids];
-        newState[index] = !newState[index];
-        setSolenoids(newState);
+    const [feedback, setFeedback] = useState(null); // { text, ok }
 
-        // TODO: Implement MQTT publish via backend
-        console.log(`MQTT: Solenoid ${index} -> ${newState[index] ? 'ON' : 'OFF'}`);
+    // Sync actuator states when WS reconnects and sends a fresh full state
+    useEffect(() => {
+        if (!systemData) return;
+        if (systemData.solenoids) setSolenoids([...systemData.solenoids]);
+        if (systemData.circulation_pumps) setPumps([...systemData.circulation_pumps]);
+        if (systemData.main_pump !== undefined) setMainPump(systemData.main_pump);
+    }, [systemData?.solenoids?.join(','), systemData?.circulation_pumps?.join(','), systemData?.main_pump]);
+
+    const showFeedback = (text, ok = true) => {
+        setFeedback({ text, ok });
+        setTimeout(() => setFeedback(null), 2500);
     };
 
-    // Toggle pump
-    const togglePump = (index) => {
-        const newState = [...pumps];
-        newState[index] = !newState[index];
-        setPumps(newState);
-
-        // TODO: Implement MQTT publish via backend
-        console.log(`MQTT: Pump ${index} -> ${newState[index] ? 'ON' : 'OFF'}`);
+    // Toggle solenoid — optimistic UI + backend call
+    const toggleSolenoid = async (index) => {
+        const newState = !solenoids[index];
+        const updated = [...solenoids];
+        updated[index] = newState;
+        setSolenoids(updated);
+        try {
+            await api.toggleSolenoid(index, newState);
+            showFeedback(`Solenoid S${index} ${newState ? 'opened' : 'closed'}`);
+        } catch (e) {
+            // Revert on failure
+            updated[index] = !newState;
+            setSolenoids([...updated]);
+            showFeedback(`Failed to toggle S${index}`, false);
+        }
     };
 
-    // Toggle big pump
-    const toggleBigPump = () => {
-        setBigPump(!bigPump);
-        // TODO: Implement MQTT publish via backend
-        console.log(`MQTT: Big Pump -> ${!bigPump ? 'ON' : 'OFF'}`);
+    // Toggle circulation pump
+    const togglePump = async (index) => {
+        const newState = !pumps[index];
+        const updated = [...pumps];
+        updated[index] = newState;
+        setPumps(updated);
+        try {
+            await api.togglePump(index, newState);
+            showFeedback(`Pump P${index} ${newState ? 'started' : 'stopped'}`);
+        } catch (e) {
+            updated[index] = !newState;
+            setPumps([...updated]);
+            showFeedback(`Failed to toggle P${index}`, false);
+        }
     };
 
-    // Update dosing pump speed
+    // Toggle main pump
+    const toggleMainPump = async () => {
+        const newState = !mainPump;
+        setMainPump(newState);
+        try {
+            await api.toggleMainPump(newState);
+            showFeedback(`Main Pump ${newState ? 'started' : 'stopped'}`);
+        } catch (e) {
+            setMainPump(!newState);
+            showFeedback('Failed to toggle Main Pump', false);
+        }
+    };
+
+    // Update dosing pump speed (UI only for now)
     const updateDosingSpeed = (index, speed) => {
-        const newState = [...dosingPumps];
-        newState[index].speed = speed;
-        setDosingPumps(newState);
-
-        // TODO: Implement speed control via backend
-        console.log(`Speed: Dosing Pump ${index} -> ${speed}%`);
+        const updated = [...dosingPumps];
+        updated[index] = { ...updated[index], speed };
+        setDosingPumps(updated);
     };
 
-    // Start timed dosing
+    // Start timed dosing via backend
     const startDosing = async (index, duration = 5000) => {
         try {
-            await manualDose(index, duration);
-            console.log(`✅ Dosing Pump ${index}: ${duration}ms command sent`);
+            await api.manualDose(index, duration);
+            showFeedback(`Dosing pump ${dosingPumps[index].name}: ${duration / 1000}s command sent`);
         } catch (error) {
-            console.error(`❌ Failed to dose Pump ${index}:`, error);
+            showFeedback(`Failed to dose ${dosingPumps[index].name}`, false);
         }
     };
 
     return (
         <div className="space-y-6">
+            {/* Feedback Toast */}
+            {feedback && (
+                <div className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium shadow transition-all ${feedback.ok
+                    ? 'bg-green-50 text-green-800 border border-green-200'
+                    : 'bg-red-50 text-red-800 border border-red-200'
+                    }`}>
+                    {feedback.ok
+                        ? <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                        : <XCircle className="w-4 h-4 flex-shrink-0" />}
+                    {feedback.text}
+                </div>
+            )}
+
             {/* Solenoid Valves */}
             <section className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                 <h2 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
@@ -81,8 +121,8 @@ export default function ControlPanel() {
                             key={index}
                             onClick={() => toggleSolenoid(index)}
                             className={`py-3 px-4 rounded-lg font-medium transition-all active:scale-95 ${active
-                                    ? 'bg-blue-600 text-white shadow-md'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                ? 'bg-blue-600 text-white shadow-md'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                 }`}
                         >
                             S{index}
@@ -91,7 +131,7 @@ export default function ControlPanel() {
                 </div>
             </section>
 
-            {/* Pumps */}
+            {/* Circulation Pumps */}
             <section className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                 <h2 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
                     <Power className="w-5 h-5 text-green-600" />
@@ -103,23 +143,23 @@ export default function ControlPanel() {
                             key={index}
                             onClick={() => togglePump(index)}
                             className={`py-3 px-4 rounded-lg font-medium transition-all active:scale-95 ${active
-                                    ? 'bg-green-600 text-white shadow-md'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                ? 'bg-green-600 text-white shadow-md'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                 }`}
                         >
                             P{index}
                         </button>
                     ))}
                 </div>
-                {/* Big Pump */}
+                {/* Main Pump */}
                 <button
-                    onClick={toggleBigPump}
-                    className={`w-full py-4 rounded-lg font-semibold text-lg transition-all active:scale-95 ${bigPump
-                            ? 'bg-green-600 text-white shadow-lg'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    onClick={toggleMainPump}
+                    className={`w-full py-4 rounded-lg font-semibold text-lg transition-all active:scale-95 ${mainPump
+                        ? 'bg-green-600 text-white shadow-lg'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                         }`}
                 >
-                    Main Pump {bigPump && '●'}
+                    Main Pump {mainPump && '●'}
                 </button>
             </section>
 

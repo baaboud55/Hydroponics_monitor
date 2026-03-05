@@ -2,28 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { Droplet, Zap, Save, AlertCircle } from 'lucide-react';
 import { api } from '../services/api';
 
-export default function ParameterConfig() {
+export default function ParameterConfig({ systemData }) {
     const [config, setConfig] = useState({
         ph: { target: 6.0, tolerance: 0.2, enabled: false, min_value: 4.0, max_value: 8.0 },
         ec: { target: 1.5, tolerance: 0.1, enabled: false, min_value: 0.5, max_value: 3.0 }
     });
 
-    const [currentValues, setCurrentValues] = useState({ ph: 0, ec: 0 });
     const [isSaving, setIsSaving] = useState(false);
     const [message, setMessage] = useState(null);
 
-    // Load configuration on mount
+    // Load configuration from backend on mount
     useEffect(() => {
         loadConfig();
-        // Set up WebSocket for real-time data
-        const ws = api.connectWebSocket((data) => {
-            setCurrentValues({
-                ph: data.ph || 0,
-                ec: data.ec || 0
-            });
-        });
-
-        return () => ws.close();
     }, []);
 
     const loadConfig = async () => {
@@ -38,28 +28,31 @@ export default function ParameterConfig() {
         }
     };
 
-    const handleUpdateParameter = async (parameter, field, value) => {
-        const newConfig = {
-            ...config,
-            [parameter]: { ...config[parameter], [field]: value }
-        };
-        setConfig(newConfig);
+    // Live sensor readings come from the shared WebSocket prop
+    const currentValues = {
+        ph: systemData?.ph ?? 0,
+        ec: systemData?.ec ?? 0,
+    };
+
+    const handleUpdateParameter = (parameter, field, value) => {
+        setConfig(prev => ({
+            ...prev,
+            [parameter]: { ...prev[parameter], [field]: value }
+        }));
     };
 
     const handleSave = async () => {
         setIsSaving(true);
         setMessage(null);
         try {
-            // Update pH configuration
             await api.updateParameter('ph', config.ph);
-            // Update EC configuration
             await api.updateParameter('ec', config.ec);
-
             setMessage({ type: 'success', text: 'Configuration saved successfully!' });
         } catch (error) {
             setMessage({ type: 'error', text: 'Failed to save configuration' });
         } finally {
             setIsSaving(false);
+            setTimeout(() => setMessage(null), 4000);
         }
     };
 
@@ -67,10 +60,10 @@ export default function ParameterConfig() {
         const newEnabled = !config[parameter].enabled;
         try {
             await api.toggleAutomation(parameter, newEnabled);
-            setConfig({
-                ...config,
-                [parameter]: { ...config[parameter], enabled: newEnabled }
-            });
+            setConfig(prev => ({
+                ...prev,
+                [parameter]: { ...prev[parameter], enabled: newEnabled }
+            }));
         } catch (error) {
             console.error('Failed to toggle automation:', error);
         }
@@ -138,7 +131,7 @@ export default function ParameterConfig() {
                     </label>
                     <div className="flex items-center gap-2">
                         <button
-                            onClick={() => handleUpdateParameter(parameter, 'target', Math.max(cfg.min_value, cfg.target - 0.1))}
+                            onClick={() => handleUpdateParameter(parameter, 'target', Math.max(cfg.min_value, parseFloat((cfg.target - 0.1).toFixed(2))))}
                             className="px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 font-bold"
                         >
                             −
@@ -153,7 +146,7 @@ export default function ParameterConfig() {
                             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-center font-semibold"
                         />
                         <button
-                            onClick={() => handleUpdateParameter(parameter, 'target', Math.min(cfg.max_value, cfg.target + 0.1))}
+                            onClick={() => handleUpdateParameter(parameter, 'target', Math.min(cfg.max_value, parseFloat((cfg.target + 0.1).toFixed(2))))}
                             className="px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 font-bold"
                         >
                             +
@@ -196,7 +189,9 @@ export default function ParameterConfig() {
 
             {/* Message Display */}
             {message && (
-                <div className={`mb-4 p-4 rounded-lg ${message.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'
+                <div className={`mb-4 p-4 rounded-lg ${message.type === 'success'
+                    ? 'bg-green-50 text-green-800 border border-green-200'
+                    : 'bg-red-50 text-red-800 border border-red-200'
                     }`}>
                     {message.text}
                 </div>

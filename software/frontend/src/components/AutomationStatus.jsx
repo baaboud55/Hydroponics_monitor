@@ -2,43 +2,28 @@ import React, { useState, useEffect } from 'react';
 import { Activity, Droplet, Zap, Clock, AlertTriangle } from 'lucide-react';
 import { api } from '../services/api';
 
-export default function AutomationStatus() {
+export default function AutomationStatus({ systemData }) {
     const [history, setHistory] = useState([]);
-    const [automationState, setAutomationState] = useState({
-        ph: { enabled: false, target: 0, current: 0 },
-        ec: { enabled: false, target: 0, current: 0 }
-    });
-    const [lastDose, setLastDose] = useState(null);
+
+    // Derive automation state from WS data prop
+    const automationState = {
+        ph: {
+            enabled: systemData?.automation_status?.enabled?.ph ?? false,
+            target: systemData?.automation_status?.targets?.ph ?? 0,
+            current: systemData?.automation_status?.current?.ph ?? 0,
+        },
+        ec: {
+            enabled: systemData?.automation_status?.enabled?.ec ?? false,
+            target: systemData?.automation_status?.targets?.ec ?? 0,
+            current: systemData?.automation_status?.current?.ec ?? 0,
+        }
+    };
+    const lastDose = systemData?.last_dose ?? null;
 
     useEffect(() => {
         loadHistory();
-        const interval = setInterval(loadHistory, 10000); // Refresh every 10 seconds
-
-        // WebSocket for real-time updates
-        const ws = api.connectWebSocket((data) => {
-            if (data.automation_status) {
-                setAutomationState({
-                    ph: {
-                        enabled: data.automation_status.enabled?.ph || false,
-                        target: data.automation_status.targets?.ph || 0,
-                        current: data.automation_status.current?.ph || 0
-                    },
-                    ec: {
-                        enabled: data.automation_status.enabled?.ec || false,
-                        target: data.automation_status.targets?.ec || 0,
-                        current: data.automation_status.current?.ec || 0
-                    }
-                });
-            }
-            if (data.last_dose) {
-                setLastDose(data.last_dose);
-            }
-        });
-
-        return () => {
-            clearInterval(interval);
-            ws.close();
-        };
+        const interval = setInterval(loadHistory, 10000);
+        return () => clearInterval(interval);
     }, []);
 
     const loadHistory = async () => {
@@ -62,7 +47,7 @@ export default function AutomationStatus() {
         const state = automationState[parameter];
         const error = Math.abs(state.current - state.target);
         const level = getErrorLevel(parameter);
-        const percentage = Math.min((error / state.target) * 100, 100);
+        const percentage = state.target > 0 ? Math.min((error / state.target) * 100, 100) : 0;
 
         const colors = {
             good: 'bg-green-500',
@@ -121,7 +106,7 @@ export default function AutomationStatus() {
                     <div>
                         <p className="opacity-80">Last Dose</p>
                         <p className="text-lg font-semibold">
-                            {lastDose ? `${lastDose.type.toUpperCase()} ${lastDose.amount_ml.toFixed(1)}ml` : 'None'}
+                            {lastDose ? `${lastDose.type.toUpperCase()} ${lastDose.amount_ml?.toFixed(1)}ml` : 'None'}
                         </p>
                     </div>
                 </div>

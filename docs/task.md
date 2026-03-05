@@ -21,9 +21,9 @@
 - [ ] Implementation - Mobile App (PWA/React)
     - [x] Initialize React Vite (configured as PWA)
     - [x] **Create Dashboard Components** (Expanded to support all sensors)
-    - [ ] Create Control Panel (Pump/Light toggles)
+    - [x] Create Control Panel (Pump/Light toggles)
     - [ ] Create Calibration Wizard (pH/EC)
-    - [ ] Implement API/Socket connection to Backend
+    - [x] Implement API/Socket connection to Backend
 - [ ] Verification
     - [ ] Test Scenarios (Low water, High Temp, etc.)
     - [ ] End-to-end simulation

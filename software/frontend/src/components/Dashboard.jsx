@@ -2,10 +2,9 @@ import React from 'react';
 import SensorCard from './SensorCard';
 import ControlPanel from './ControlPanel';
 import { Settings, Wifi, WifiOff } from 'lucide-react';
-import { useWebSocket } from '../hooks/useWebSocket';
 
-export default function Dashboard() {
-    const { data, isConnected } = useWebSocket();
+export default function Dashboard({ systemData, isConnected }) {
+    const data = systemData;
 
     // Map backend data to sensor structure
     const sensors = {
@@ -13,28 +12,28 @@ export default function Dashboard() {
             {
                 type: 'ph',
                 label: 'pH Level',
-                value: data?.ph?.toFixed(1) || '--',
+                value: data?.ph?.toFixed(1) ?? '--',
                 unit: 'pH',
                 status: data?.ph ? (data.ph >= 5.5 && data.ph <= 6.5 ? 'normal' : 'warning') : 'normal'
             },
             {
                 type: 'ec',
                 label: 'EC (Nutrients)',
-                value: data?.ec?.toFixed(2) || '--',
+                value: data?.ec?.toFixed(2) ?? '--',
                 unit: 'mS/cm',
                 status: data?.ec ? (data.ec >= 1.0 && data.ec <= 2.0 ? 'normal' : 'warning') : 'normal'
             },
             {
                 type: 'temp',
                 label: 'Water Temp',
-                value: data?.water_temp?.toFixed(1) || '--',
+                value: data?.water_temp?.toFixed(1) ?? '--',
                 unit: '°C',
                 status: 'normal'
             },
             {
                 type: 'water',
                 label: 'Res. Level',
-                value: data?.water_level?.toString() || '--',
+                value: data?.water_level?.toString() ?? '--',
                 unit: '%',
                 status: 'normal'
             },
@@ -43,21 +42,21 @@ export default function Dashboard() {
             {
                 type: 'air_temp',
                 label: 'Air Temp',
-                value: data?.air_temp?.toFixed(1) || '--',
+                value: data?.air_temp?.toFixed(1) ?? '--',
                 unit: '°C',
                 status: 'normal'
             },
             {
                 type: 'humidity',
                 label: 'Humidity',
-                value: data?.humidity?.toFixed(0) || '--',
+                value: data?.humidity?.toFixed(0) ?? '--',
                 unit: '%',
                 status: 'normal'
             },
             {
                 type: 'vpd',
                 label: 'VPD',
-                value: data?.vpd?.toFixed(1) || '--',
+                value: data?.vpd?.toFixed(2) ?? '--',
                 unit: 'kPa',
                 status: 'normal'
             },
@@ -66,7 +65,7 @@ export default function Dashboard() {
             {
                 type: 'power',
                 label: 'Pump Current',
-                value: data?.power_current?.toFixed(1) || '--',
+                value: data?.power_current?.toFixed(1) ?? '--',
                 unit: 'A',
                 status: 'normal'
             },
@@ -123,8 +122,8 @@ export default function Dashboard() {
                 </div>
             </section>
 
-            {/* Control Panel */}
-            <ControlPanel />
+            {/* Control Panel - pass actuator state from WS for sync on reconnect */}
+            <ControlPanel systemData={data} />
         </div>
     );
 }
