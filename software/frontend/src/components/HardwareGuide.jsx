@@ -6,21 +6,21 @@ const GUIDE_STEPS = [
         id: 'sensors',
         title: 'Sensor Placement',
         description: 'Submerge the pH and EC probes into your main hydroponic reservoir. Ensure they are placed in an area with good water circulation but away from direct dosing streams to avoid false readings.',
-        image: '/hardware_sensors.png',
+        image: `${import.meta.env.BASE_URL}hardware_sensors.png`,
         tips: ['Keep probe tips submerged at all times.', 'Calibrate sensors before first use.']
     },
     {
         id: 'pumps',
         title: 'Dosing Pump Setup',
         description: 'Mount the peristaltic dosing pumps above the reservoir. Connect the inlet tubing to your pH Up/Down and Nutrient bottles. Run the outlet tubing directly into the reservoir.',
-        image: '/hardware_pumps.png',
+        image: `${import.meta.env.BASE_URL}hardware_pumps.png`,
         tips: ['Use check valves to prevent backflow.', 'Ensure tubing connections are airtight.']
     },
     {
         id: 'hub',
         title: 'Control Hub Installation',
         description: 'Mount the main smart control hub on a wall near your system, keeping it safely away from splashing water. Connect the sensor cables, pump control wires, and plug in the power adapter.',
-        image: '/hardware_hub.png',
+        image: `${import.meta.env.BASE_URL}hardware_hub.png`,
         tips: ['Green LED ring indicates system is online.', 'Ensure reliable Wi-Fi coverage at the hub location.']
     }
 ];
