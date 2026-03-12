@@ -4,24 +4,24 @@ import { ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react';
 const GUIDE_STEPS = [
     {
         id: 'sensors',
-        title: 'Sensor Placement',
-        description: 'Submerge the pH and EC probes into your main hydroponic reservoir. Ensure they are placed in an area with good water circulation but away from direct dosing streams to avoid false readings.',
+        title: 'Place the Sensors',
+        description: 'Put the two sensors (pH and Nutrients) directly into your water tank. Make sure they are in moving water, but not right where new liquids pour in, so they get accurate readings.',
         image: `${import.meta.env.BASE_URL}hardware_sensors.png`,
-        tips: ['Keep probe tips submerged at all times.', 'Calibrate sensors before first use.']
+        tips: ['Always keep the tips underwater.', 'Follow the calibration steps before using them for the first time.']
     },
     {
         id: 'pumps',
-        title: 'Dosing Pump Setup',
-        description: 'Mount the peristaltic dosing pumps above the reservoir. Connect the inlet tubing to your pH Up/Down and Nutrient bottles. Run the outlet tubing directly into the reservoir.',
+        title: 'Connect the Pumps',
+        description: 'Place the small pumps above your water tank. Hook the input tubes to your nutrient and pH bottles, and put the output tubes so they empty directly into the tank.',
         image: `${import.meta.env.BASE_URL}hardware_pumps.png`,
-        tips: ['Use check valves to prevent backflow.', 'Ensure tubing connections are airtight.']
+        tips: ['Use the little check valves so water doesn\'t flow backward.', 'Make sure all the tubes are pushed on tightly.']
     },
     {
         id: 'hub',
-        title: 'Control Hub Installation',
-        description: 'Mount the main smart control hub on a wall near your system, keeping it safely away from splashing water. Connect the sensor cables, pump control wires, and plug in the power adapter.',
+        title: 'Mount the Control Box',
+        description: 'Attach the main white smart box to a wall near your plants, high enough to stay completely dry. Plug in the sensors, the pumps, and the power cord.',
         image: `${import.meta.env.BASE_URL}hardware_hub.png`,
-        tips: ['Green LED ring indicates system is online.', 'Ensure reliable Wi-Fi coverage at the hub location.']
+        tips: ['The green ring means it is connected and ready.', 'Make sure your home Wi-Fi reaches the box.']
     }
 ];
 

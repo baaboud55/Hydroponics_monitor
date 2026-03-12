@@ -56,7 +56,7 @@ export default function SystemVisualizer({ plant, onBack, systemData }) {
                                 <span className="text-4xl">{plant.image}</span>
                                 Growing {plant.name}
                             </h2>
-                            <p className="text-slate-400 text-sm mt-1">Autonomous environment control engaged</p>
+                            <p className="text-slate-400 text-sm mt-1">Auto-pilot is running. Your plants are being taken care of.</p>
                         </div>
 
                         {/* Top: Grow Tray & Plants */}
@@ -144,13 +144,12 @@ export default function SystemVisualizer({ plant, onBack, systemData }) {
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
 
                 {/* Sidebar Metrics (Right) */}
                 <div className="w-full lg:w-96 border-l border-slate-800/50 bg-slate-900/50 backdrop-blur-md p-8 flex flex-col">
-                    <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-widest mb-8">System Telemetry</h3>
+                    <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-widest mb-8">Current Status</h3>
 
                     <div className="flex flex-col gap-6">
                         {/* pH Metric Card */}
@@ -178,7 +177,7 @@ export default function SystemVisualizer({ plant, onBack, systemData }) {
                             <div className="flex items-start justify-between mb-4">
                                 <div className="flex items-center gap-2 text-slate-400">
                                     <FlaskConical className="w-4 h-4" />
-                                    <span className="font-medium">Nutrients (EC)</span>
+                                    <span className="font-medium">Plant Food (Nutrients)</span>
                                 </div>
                                 <div className="text-xs font-semibold px-2 py-1 rounded bg-slate-900 border border-slate-700 text-slate-300">Target: {plant.idealEc}</div>
                             </div>
@@ -196,7 +195,7 @@ export default function SystemVisualizer({ plant, onBack, systemData }) {
                             <div className="flex items-start justify-between mb-4">
                                 <div className="flex items-center gap-2 text-slate-400">
                                     <Thermometer className="w-4 h-4" />
-                                    <span className="font-medium">Water Temp</span>
+                                    <span className="font-medium">Water Temperature</span>
                                 </div>
                                 <div className="text-xs font-semibold px-2 py-1 rounded bg-slate-900 border border-slate-700 text-slate-300">Target: {plant.idealTemp}</div>
                             </div>
@@ -211,12 +210,12 @@ export default function SystemVisualizer({ plant, onBack, systemData }) {
                         <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700 flex items-start gap-3">
                             <Settings className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
                             <p className="text-xs text-slate-400 leading-relaxed">
-                                AI Control Engine is actively monitoring and adjusting the dosing pumps to maintain optimal growth curves.
+                                The smart system is constantly watching your plants and adding exactly what they need to thrive.
                             </p>
                         </div>
                     </div>
                 </div>
-            </main>
+            </main >
 
             <style>{`
                 @keyframes bounce-slow {
@@ -250,6 +249,6 @@ export default function SystemVisualizer({ plant, onBack, systemData }) {
                 .animate-flow { animation: flow 1s infinite linear; }
                 .animate-bubble { animation: bubble 3s infinite linear; }
             `}</style>
-        </div>
+        </div >
     );
 }

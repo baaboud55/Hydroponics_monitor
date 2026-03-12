@@ -5,7 +5,7 @@ const PLANT_TYPES = [
     {
         id: 'lettuce',
         name: 'Lettuce',
-        description: 'Fast-growing leafy greens, perfect for beginner hydroponics.',
+        description: 'Fast-growing leafy greens. Very easy to grow for beginners.',
         image: '🥬', // Using emoji for simplicity, can be replaced with real images
         idealTemp: '18-22°C',
         idealPh: '5.5-6.5',
@@ -15,7 +15,7 @@ const PLANT_TYPES = [
     {
         id: 'tomato',
         name: 'Tomatoes',
-        description: 'Vining fruit that requires robust support and higher nutrients.',
+        description: 'Delicious fruit that needs a bit more food and support to grow tall.',
         image: '🍅',
         idealTemp: '20-27°C',
         idealPh: '5.5-6.5',
@@ -25,7 +25,7 @@ const PLANT_TYPES = [
     {
         id: 'basil',
         name: 'Basil',
-        description: 'Aromatic herb that thrives in warm, well-lit environments.',
+        description: 'Strong-smelling herb that loves warm, bright spaces.',
         image: '🌿',
         idealTemp: '21-27°C',
         idealPh: '5.5-6.5',
@@ -35,7 +35,7 @@ const PLANT_TYPES = [
     {
         id: 'strawberry',
         name: 'Strawberries',
-        description: 'Sweet berries needing careful moisture and nutrient management.',
+        description: 'Sweet berries that need balanced water and food.',
         image: '🍓',
         idealTemp: '15-26°C',
         idealPh: '5.5-6.2',
@@ -53,13 +53,13 @@ export default function PlantSelector({ onSelectPlant }) {
             <div className="text-center mb-16 relative z-10 w-full max-w-4xl fade-up">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-sm font-medium mb-6">
                     <Leaf className="w-4 h-4" />
-                    <span>HydroMonitor Intelligent Grow</span>
+                    <span>HydroMonitor Smart Grow</span>
                 </div>
                 <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight mb-6 bg-gradient-to-br from-white to-slate-400 bg-clip-text text-transparent">
                     What are we growing today?
                 </h1>
                 <p className="text-xl text-slate-400 max-w-2xl mx-auto">
-                    Select your crop, and our autonomous system will automatically adjust the environment, nutrients, and pH to precise optimal targets.
+                    Choose what you want to grow, and our smart system will automatically feed, water, and care for your plants.
                 </p>
             </div>
 
@@ -87,17 +87,17 @@ export default function PlantSelector({ onSelectPlant }) {
                                 <span className="font-semibold text-slate-200">{plant.idealTemp}</span>
                             </div>
                             <div className="flex items-center justify-between text-xs bg-slate-900/50 p-2 rounded-lg border border-slate-700/50">
-                                <span className="flex items-center gap-1 text-slate-400"><Droplets className="w-3.5 h-3.5" /> pH</span>
+                                <span className="flex items-center gap-1 text-slate-400"><Droplets className="w-3.5 h-3.5" /> Water pH</span>
                                 <span className="font-semibold text-slate-200">{plant.idealPh}</span>
                             </div>
                             <div className="flex items-center justify-between text-xs bg-slate-900/50 p-2 rounded-lg border border-slate-700/50">
-                                <span className="flex items-center gap-1 text-slate-400"><Droplets className="w-3.5 h-3.5" /> EC</span>
+                                <span className="flex items-center gap-1 text-slate-400"><Droplets className="w-3.5 h-3.5" /> Plant Food</span>
                                 <span className="font-semibold text-slate-200">{plant.idealEc}</span>
                             </div>
                         </div>
 
                         <div className="mt-6 pt-4 border-t border-slate-700/50 flex items-center text-sm font-medium text-emerald-400 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                            Initialize System &rarr;
+                            Start Growing &rarr;
                         </div>
                     </div>
                 ))}
