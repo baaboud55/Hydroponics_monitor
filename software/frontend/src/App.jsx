@@ -4,12 +4,14 @@ import ParameterConfig from './components/ParameterConfig';
 import AutomationStatus from './components/AutomationStatus';
 import PlantSelector from './components/PlantSelector';
 import SystemVisualizer from './components/SystemVisualizer';
+import MainMenu from './components/MainMenu';
+import HardwareGuide from './components/HardwareGuide';
 import { Home, Settings, Activity, Cpu } from 'lucide-react';
 import { useWebSocket } from './hooks/useWebSocket';
 
 function App() {
     // Top-level routing state
-    const [viewMode, setViewMode] = useState('consumer'); // 'consumer' | 'technical'
+    const [viewMode, setViewMode] = useState('main-menu'); // 'main-menu' | 'consumer' | 'technical' | 'hardware-guide'
     const [selectedPlant, setSelectedPlant] = useState(null);
     const [activeTab, setActiveTab] = useState('dashboard');
 
@@ -22,14 +24,32 @@ function App() {
         { id: 'config', label: 'Parameter config', icon: Settings }
     ];
 
-    // -- CONSUMER VIEW (The new "WOW" experience) --
-    if (viewMode === 'consumer') {
+    // -- MAIN MENU VIEW --
+    if (viewMode === 'main-menu') {
+        return <MainMenu onNavigate={setViewMode} />;
+    }
+
+    // -- HARDWARE GUIDE VIEW --
+    if (viewMode === 'hardware-guide') {
+        return <HardwareGuide onNavigate={setViewMode} />;
+    }
+
+    // -- CONSUMER VIEW (The "WOW" Experience) --
+    if (viewMode === 'consumer' || viewMode === 'visualizer') {
         return (
             <div className="relative">
+                {/* Back to Hub Navigation */}
+                <button
+                    onClick={() => { setViewMode('main-menu'); setSelectedPlant(null); }}
+                    className="absolute top-4 left-4 z-50 p-2 px-4 rounded-lg bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700 transition flex items-center gap-2 text-sm font-medium border border-slate-700/50 backdrop-blur-md"
+                >
+                    &larr; Back to Hub
+                </button>
+
                 {/* Hidden Advanced Toggle */}
                 <button
                     onClick={() => setViewMode('technical')}
-                    className="absolute top-4 right-4 z-50 p-2 rounded-lg bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700 transition"
+                    className="absolute top-4 right-4 z-50 p-2 rounded-lg bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700 transition border border-slate-700/50 backdrop-blur-md"
                     title="Developer / Technical View"
                 >
                     <Cpu className="w-5 h-5" />
