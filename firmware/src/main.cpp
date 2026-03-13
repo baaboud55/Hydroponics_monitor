@@ -17,11 +17,12 @@
 #define PIN_DOSING_PH 21
 #define PIN_DOSING_AUX 22
 
-// Sensor Pins
 #define PIN_SENSOR_DS18B20 4
 #define PIN_SENSOR_DHT 5
 #define PIN_SENSOR_LEVEL 32
 #define PIN_SENSOR_CURRENT 35
+#define PIN_SENSOR_PH 36
+#define PIN_SENSOR_EC 39
 
 // MQTT Settings (Hardcoded for now, should be dynamic later)
 #define MQTT_SERVER "test.mosquitto.org"
@@ -30,7 +31,7 @@
 
 HydroActuators actuators(PIN_SR_DATA, PIN_SR_CLOCK, PIN_SR_LATCH, PIN_SR_CLEAR);
 HydroDosingPumps dosingPumps(PIN_DOSING_A, PIN_DOSING_B, PIN_DOSING_PH, PIN_DOSING_AUX);
-HydroSensors sensors(PIN_SENSOR_DS18B20, PIN_SENSOR_DHT, PIN_SENSOR_LEVEL, PIN_SENSOR_CURRENT);
+HydroSensors sensors(PIN_SENSOR_DS18B20, PIN_SENSOR_DHT, PIN_SENSOR_LEVEL, PIN_SENSOR_CURRENT, PIN_SENSOR_PH, PIN_SENSOR_EC);
 WiFiClient espClient;
 HydroMQTT mqtt(espClient, MQTT_SERVER, MQTT_PORT, DEVICE_ID);
 
@@ -94,6 +95,13 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
           dosingPumps.dose(pumpIndex, duration);
       }
   }
+  else if (topicStr.indexOf("/control/calibrate/") > 0) {
+      int lastSlash = topicStr.lastIndexOf('/');
+      String sensor = topicStr.substring(lastSlash + 1);
+      
+      sensors.processCalibration(sensor, payloadStr);
+      Serial.printf("Received Calibration command for %s: %s\n", sensor.c_str(), payloadStr.c_str());
+  }
 }
 
 void setup() {
@@ -137,6 +145,8 @@ void setup() {
       // Send Discovery
       mqtt.sendDiscovery("sensor", "uptime", "Uptime", "s", "duration");
       mqtt.sendDiscovery("sensor", "do", "Dissolved Oxygen", "mg/L", "concentration");
+      mqtt.sendDiscovery("sensor", "ph", "pH Level", "pH", "");
+      mqtt.sendDiscovery("sensor", "ec", "Electrical Conductivity", "mS/cm", "conductivity");
   }
 }
 
@@ -178,6 +188,8 @@ void loop() {
           mqtt.publishSensor("humidity", sensors.getHumidity());
           mqtt.publishSensor("power_current", sensors.getCurrent());
           mqtt.publishSensor("do", sensors.getDO());
+          mqtt.publishSensor("ph", sensors.getPH());
+          mqtt.publishSensor("ec", sensors.getEC());
           
           // Publish Water Level (float switch maps to 100% or 0% for the UI)
           mqtt.publishSensor("water_level", sensors.isWaterLevelOk() ? 100.0 : 0.0);

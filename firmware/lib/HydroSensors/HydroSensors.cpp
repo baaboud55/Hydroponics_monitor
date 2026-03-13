@@ -7,11 +7,13 @@
 // Specify DHT Type
 #define DHTTYPE DHT21 // AM2301 is compatible with DHT21
 
-HydroSensors::HydroSensors(uint8_t oneWirePin, uint8_t dhtPin, uint8_t waterLevelPin, uint8_t currentPin)
+HydroSensors::HydroSensors(uint8_t oneWirePin, uint8_t dhtPin, uint8_t waterLevelPin, uint8_t currentPin, uint8_t phPin, uint8_t ecPin)
     : _oneWirePin(oneWirePin), 
       _dhtPin(dhtPin), 
       _waterLevelPin(waterLevelPin), 
       _currentPin(currentPin),
+      _phPin(phPin),
+      _ecPin(ecPin),
       _oneWire(oneWirePin),
       _ds18b20(&_oneWire),
       _dht(dhtPin, DHTTYPE) 
@@ -21,11 +23,20 @@ HydroSensors::HydroSensors(uint8_t oneWirePin, uint8_t dhtPin, uint8_t waterLeve
     _humidity = 0.0;
     _current = 0.0;
     _do = 0.0;
+    _ph = 7.0; // Default safe ph
+    _ec = 1.0; // Default safe ec
+    _phOffset = 0.0;
+    _ecOffset = 0.0;
     _lastDhtRead = 0;
     _lastDs18b20Read = 0;
 }
 
 void HydroSensors::begin() {
+    // Load saved calibration values
+    _preferences.begin("hydro_cal", false);
+    _phOffset = _preferences.getFloat("ph_offset", 0.0);
+    _ecOffset = _preferences.getFloat("ec_offset", 0.0);
+
     // Initialize DS18B20
     _ds18b20.begin();
     // Don't wait for conversion to avoid blocking
@@ -38,9 +49,12 @@ void HydroSensors::begin() {
     // HIGH = Water level OK, LOW = Empty/Critical
     pinMode(_waterLevelPin, INPUT_PULLUP);
 
-    // Initialize Current Sensor Pin
     pinMode(_currentPin, INPUT);
     // Note: analogReadResolution() and attenuation are set globally or left to ESP32 defaults (12-bit)
+
+    // Init pH and EC pins
+    pinMode(_phPin, INPUT);
+    pinMode(_ecPin, INPUT);
 
     // Initialize DO Sensor Serial (Serial2) on dig_0 pins (RX=16, TX=17)
     // Adjust baud rate (e.g. 9600) matching your specific DO sensor
@@ -69,6 +83,10 @@ void HydroSensors::update() {
 
     // Update current (can be read fast/frequently, but we'll read it every update cycle)
     _readCurrent();
+
+    // Read analog pH and EC
+    _readPH();
+    _readEC();
 
     // Read DO from Serial if available
     _readDO();
@@ -133,6 +151,40 @@ void HydroSensors::_readDO() {
     }
 }
 
+void HydroSensors::_readPH() {
+    // Read raw analog value (0-4095)
+    int rawVal = analogRead(_phPin);
+    
+    // y = mx + b
+    // For a typical ESP32 3.3V ADC and standard industrial pH probe:
+    // Voltage goes down as pH goes up. A rough slope is -5.7.
+    // Assuming 1.65V = pH 7, 4095 = 3.3V
+    float voltage = (rawVal / 4095.0) * 3.3;
+    float uncalibrated_ph = 7.0 + (voltage - 1.65) * -5.7; 
+    
+    // Apply user calibration offset
+    float calculated_ph = uncalibrated_ph + _phOffset;
+    
+    // EWMA Smoothing
+    _ph = (0.1 * calculated_ph) + (0.9 * _ph);
+}
+
+void HydroSensors::_readEC() {
+    // Read raw analog value (0-4095)
+    int rawVal = analogRead(_ecPin);
+    
+    // y = mx + b
+    // Rough estimation for EC mapping an analog voltage.
+    float voltage = (rawVal / 4095.0) * 3.3;
+    float uncalibrated_ec = voltage * 1.5; // Dummy slope (e.g. 1V = 1.5 mS/cm)
+    
+    // Apply user calibration offset
+    float calculated_ec = uncalibrated_ec + _ecOffset;
+    
+    // EWMA Smoothing
+    _ec = (0.1 * calculated_ec) + (0.9 * _ec);
+}
+
 float HydroSensors::getWaterTemp() {
     return _waterTemp;
 }
@@ -153,9 +205,53 @@ float HydroSensors::getDO() {
     return _do;
 }
 
+float HydroSensors::getPH() {
+    return _ph;
+}
+
+float HydroSensors::getEC() {
+    return _ec;
+}
+
 bool HydroSensors::isWaterLevelOk() {
     // Assuming normally open float switch connected between Pin and GND.
     // With INPUT_PULLUP: Switch OPEN (water OK) -> HIGH. Switch CLOSED (water empty) -> LOW.
     // Adjust logic here if switch acts inversely.
     return digitalRead(_waterLevelPin) == HIGH;
+}
+
+void HydroSensors::processCalibration(String sensor, String command) {
+    if (sensor == "do") {
+        // DO sensor uses UART directly
+        Serial2.print(command);
+        Serial2.print('\r');
+        Serial.printf("Sent to DO UART: %s\\n", command.c_str());
+    } else if (sensor == "ph") {
+        if (command.startsWith("cal,7,")) {
+            // Wait, the frontend might not append the reading properly if it simulates.
+            // Let's rely entirely on the firmware's internal reading when we get "cal,7"
+        }
+        
+        if (command == "cal,7") {
+            // We want the final _ph to equal 7.0.
+            // _ph = uncalibrated_ph + _phOffset. 
+            // So _phOffset = 7.0 - uncalibrated_ph
+            // Uncalibrated pH is our current reading minus the old offset
+            float uncalibrated_ph = _ph - _phOffset;
+            _phOffset = 7.0 - uncalibrated_ph;
+            _preferences.putFloat("ph_offset", _phOffset);
+        } else if (command == "cal,clear") {
+            _phOffset = 0.0;
+            _preferences.putFloat("ph_offset", _phOffset);
+        }
+        Serial.printf("Updated pH offset: %.2f\\n", _phOffset);
+    } else if (sensor == "ec") {
+        if (command == "cal,custom") {
+            // Example EC calibration if needed
+        } else if (command == "cal,clear") {
+            _ecOffset = 0.0;
+            _preferences.putFloat("ec_offset", _ecOffset);
+        }
+        Serial.printf("Updated EC offset: %.2f\\n", _ecOffset);
+    }
 }

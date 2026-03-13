@@ -57,8 +57,8 @@ void HydroMQTT::reconnect() {
 void HydroMQTT::publishSensor(const char* sensorName, float value) {
     if (!_client.connected()) return;
     
-    // Topic: hydro/<deviceId>/status/<sensorName>
-    String topic = String("hydro/") + _deviceId + "/status/" + sensorName;
+    // Topic: hydro/status/<deviceId>/<sensorName>
+    String topic = String("hydro/status/") + _deviceId + "/" + sensorName;
     String payload = String(value, 2);
     
     _client.publish(topic.c_str(), payload.c_str());
@@ -67,7 +67,7 @@ void HydroMQTT::publishSensor(const char* sensorName, float value) {
 void HydroMQTT::publishState(const char* attribute, const char* state) {
      if (!_client.connected()) return;
      
-     String topic = String("hydro/") + _deviceId + "/status/" + attribute;
+     String topic = String("hydro/status/") + _deviceId + "/" + attribute;
      _client.publish(topic.c_str(), state);
 }
 
@@ -79,7 +79,7 @@ void HydroMQTT::sendDiscovery(const char* component, const char* sensorId, const
     DynamicJsonDocument doc(1024);
     
     String uniqueId = String(_deviceId) + "_" + sensorId;
-    String stateTopic = String("hydro/") + _deviceId + "/status/" + sensorId;
+    String stateTopic = String("hydro/status/") + _deviceId + "/" + sensorId;
 
     doc["name"] = friendlyName;
     doc["uniq_id"] = uniqueId;

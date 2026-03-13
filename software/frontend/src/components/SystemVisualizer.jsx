@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Settings, ArrowLeft, Droplets, Activity, Thermometer, FlaskConical } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function SystemVisualizer({ plant, onBack, systemData }) {
+    const { t } = useLanguage();
     const [dosing, setDosing] = useState(null);
 
     // Simulate dosing animation periodically based on "live" data simulation
@@ -30,14 +32,14 @@ export default function SystemVisualizer({ plant, onBack, systemData }) {
                     onClick={onBack}
                     className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
                 >
-                    <ArrowLeft className="w-5 h-5" />
-                    <span className="font-medium">Change Crop</span>
+                    <ArrowLeft className="w-5 h-5 transform rtl:-scale-x-100" />
+                    <span className="font-medium">{t('changeCrop')}</span>
                 </button>
 
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-800/80 border border-slate-700">
                         <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)] animate-pulse"></span>
-                        <span className="text-sm font-medium tracking-wide">System Online & Active </span>
+                        <span className="text-sm font-medium tracking-wide">{t('systemOnline')} </span>
                     </div>
                 </div>
             </header>
@@ -51,12 +53,12 @@ export default function SystemVisualizer({ plant, onBack, systemData }) {
                     <div className="relative w-full max-w-3xl aspect-[4/3] rounded-3xl bg-slate-900/40 border border-slate-800 shadow-[0_0_50px_rgba(0,0,0,0.5)] backdrop-blur-sm p-4 overflow-hidden flex flex-col hero-entrance">
 
                         {/* Title overlay */}
-                        <div className="absolute top-6 left-8 z-20">
+                        <div className="absolute top-6 start-8 z-20">
                             <h2 className="text-2xl font-bold text-white flex items-center gap-3">
                                 <span className="text-4xl">{plant.image}</span>
-                                Growing {plant.name}
+                                {t('growing')} {plant.name}
                             </h2>
-                            <p className="text-slate-400 text-sm mt-1">Auto-pilot is running. Your plants are being taken care of.</p>
+                            <p className="text-slate-400 text-sm mt-1">{t('autopilotMsg')}</p>
                         </div>
 
                         {/* Top: Grow Tray & Plants */}
@@ -123,11 +125,11 @@ export default function SystemVisualizer({ plant, onBack, systemData }) {
                             </div>
 
                             {/* Dosing Pumps (Right side) */}
-                            <div className="w-1/3 ml-8 flex flex-col justify-around h-full py-4 gap-4">
+                            <div className="w-1/3 ms-8 flex flex-col justify-around h-full py-4 gap-4">
                                 {/* Component: Pump Ph */}
                                 <div className="flex items-center gap-4 group">
                                     <div className="flex-1 h-3 bg-slate-800 rounded-full relative overflow-hidden">
-                                        <div className={`absolute top-0 left-0 h-full w-full bg-rose-500/50 ${dosing === 'ph' ? 'animate-flow' : 'opacity-0'} transition-opacity`}></div>
+                                        <div className={`absolute top-0 start-0 h-full w-full bg-rose-500/50 ${dosing === 'ph' ? 'animate-flow' : 'opacity-0'} transition-opacity`}></div>
                                     </div>
                                     <div className={`p-3 rounded-xl border ${dosing === 'ph' ? 'border-rose-500 bg-rose-500/20 shadow-[0_0_20px_rgba(244,63,94,0.3)]' : 'border-slate-700 bg-slate-800'} transition-all`}>
                                         <Activity className={`w-6 h-6 ${dosing === 'ph' ? 'text-rose-400' : 'text-slate-500'}`} />
@@ -136,7 +138,7 @@ export default function SystemVisualizer({ plant, onBack, systemData }) {
                                 {/* Component: Pump Nutrient */}
                                 <div className="flex items-center gap-4 group">
                                     <div className="flex-1 h-3 bg-slate-800 rounded-full relative overflow-hidden">
-                                        <div className={`absolute top-0 left-0 h-full w-full bg-emerald-500/50 ${dosing === 'nutrient' ? 'animate-flow' : 'opacity-0'} transition-opacity`}></div>
+                                        <div className={`absolute top-0 start-0 h-full w-full bg-emerald-500/50 ${dosing === 'nutrient' ? 'animate-flow' : 'opacity-0'} transition-opacity`}></div>
                                     </div>
                                     <div className={`p-3 rounded-xl border ${dosing === 'nutrient' ? 'border-emerald-500 bg-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.3)]' : 'border-slate-700 bg-slate-800'} transition-all`}>
                                         <FlaskConical className={`w-6 h-6 ${dosing === 'nutrient' ? 'text-emerald-400' : 'text-slate-500'}`} />
@@ -148,46 +150,46 @@ export default function SystemVisualizer({ plant, onBack, systemData }) {
                 </div>
 
                 {/* Sidebar Metrics (Right) */}
-                <div className="w-full lg:w-96 border-l border-slate-800/50 bg-slate-900/50 backdrop-blur-md p-8 flex flex-col">
-                    <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-widest mb-8">Current Status</h3>
+                <div className="w-full lg:w-96 border-s border-slate-800/50 bg-slate-900/50 backdrop-blur-md p-8 flex flex-col">
+                    <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-widest mb-8">{t('currentStatus')}</h3>
 
                     <div className="flex flex-col gap-6">
                         {/* pH Metric Card */}
                         <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-5 relative overflow-hidden group hover:border-slate-600 transition-colors">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/5 rounded-full blur-2xl group-hover:bg-rose-500/10 transition-colors"></div>
+                            <div className="absolute top-0 end-0 w-32 h-32 bg-rose-500/5 rounded-full blur-2xl group-hover:bg-rose-500/10 transition-colors"></div>
                             <div className="flex items-start justify-between mb-4">
                                 <div className="flex items-center gap-2 text-slate-400">
                                     <Activity className="w-4 h-4" />
-                                    <span className="font-medium">pH Level</span>
+                                    <span className="font-medium">{t('phLevel')}</span>
                                 </div>
-                                <div className="text-xs font-semibold px-2 py-1 rounded bg-slate-900 border border-slate-700 text-slate-300">Target: {plant.idealPh}</div>
+                                <div className="text-xs font-semibold px-2 py-1 rounded bg-slate-900 border border-slate-700 text-slate-300">{t('target')} {plant.idealPh}</div>
                             </div>
                             <div className="flex items-end gap-2">
                                 <span className={`text-4xl font-bold tracking-tight ${dosing === 'ph' ? 'text-white drop-shadow-[0_0_10px_rgba(244,63,94,0.5)]' : 'text-slate-200'} transition-all`}>
                                     {currentPh}
                                 </span>
-                                <span className="text-slate-500 mb-1">pH</span>
+                                <span className="text-slate-500 mb-1">{t('ph')}</span>
                             </div>
-                            {dosing === 'ph' && <p className="text-xs text-rose-400 mt-2 animate-pulse">Auto-dosing engaged...</p>}
+                            {dosing === 'ph' && <p className="text-xs text-rose-400 mt-2 animate-pulse">{t('autoDosingEngaged')}</p>}
                         </div>
 
                         {/* EC Metric Card */}
                         <div className="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-5 relative overflow-hidden group hover:border-slate-600 transition-colors">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-2xl group-hover:bg-cyan-500/10 transition-colors"></div>
+                            <div className="absolute top-0 end-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-2xl group-hover:bg-cyan-500/10 transition-colors"></div>
                             <div className="flex items-start justify-between mb-4">
                                 <div className="flex items-center gap-2 text-slate-400">
                                     <FlaskConical className="w-4 h-4" />
-                                    <span className="font-medium">Plant Food (Nutrients)</span>
+                                    <span className="font-medium">{t('plantFoodNutrients')}</span>
                                 </div>
-                                <div className="text-xs font-semibold px-2 py-1 rounded bg-slate-900 border border-slate-700 text-slate-300">Target: {plant.idealEc}</div>
+                                <div className="text-xs font-semibold px-2 py-1 rounded bg-slate-900 border border-slate-700 text-slate-300">{t('target')} {plant.idealEc}</div>
                             </div>
                             <div className="flex items-end gap-2">
                                 <span className={`text-4xl font-bold tracking-tight ${dosing === 'nutrient' ? 'text-white drop-shadow-[0_0_10px_rgba(34,211,238,0.5)]' : 'text-slate-200'} transition-all`}>
                                     {currentEc}
                                 </span>
-                                <span className="text-slate-500 mb-1">mS/cm</span>
+                                <span className="text-slate-500 mb-1">{t('mscm')}</span>
                             </div>
-                            {dosing === 'nutrient' && <p className="text-xs text-cyan-400 mt-2 animate-pulse">Mixing nutrient solution...</p>}
+                            {dosing === 'nutrient' && <p className="text-xs text-cyan-400 mt-2 animate-pulse">{t('mixingNutrient')}</p>}
                         </div>
 
                         {/* Temp Metric Card */}
@@ -195,13 +197,13 @@ export default function SystemVisualizer({ plant, onBack, systemData }) {
                             <div className="flex items-start justify-between mb-4">
                                 <div className="flex items-center gap-2 text-slate-400">
                                     <Thermometer className="w-4 h-4" />
-                                    <span className="font-medium">Water Temperature</span>
+                                    <span className="font-medium">{t('waterTemp')}</span>
                                 </div>
-                                <div className="text-xs font-semibold px-2 py-1 rounded bg-slate-900 border border-slate-700 text-slate-300">Target: {plant.idealTemp}</div>
+                                <div className="text-xs font-semibold px-2 py-1 rounded bg-slate-900 border border-slate-700 text-slate-300">{t('target')} {plant.idealTemp}</div>
                             </div>
                             <div className="flex items-end gap-2">
                                 <span className="text-4xl font-bold tracking-tight text-slate-200">{currentTemp}</span>
-                                <span className="text-slate-500 mb-1">°C</span>
+                                <span className="text-slate-500 mb-1">{t('c')}</span>
                             </div>
                         </div>
                     </div>
@@ -210,7 +212,7 @@ export default function SystemVisualizer({ plant, onBack, systemData }) {
                         <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700 flex items-start gap-3">
                             <Settings className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
                             <p className="text-xs text-slate-400 leading-relaxed">
-                                The smart system is constantly watching your plants and adding exactly what they need to thrive.
+                                {t('smartSystemMsg')}
                             </p>
                         </div>
                     </div>

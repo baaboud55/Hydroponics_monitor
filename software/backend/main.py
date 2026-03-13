@@ -204,6 +204,10 @@ class ManualDoseRequest(BaseModel):
     pump_index: int  # 0-3
     duration_ms: int  # milliseconds
 
+class CalibrationRequest(BaseModel):
+    sensor: str  # 'ph', 'ec', 'do'
+    command: str # Payload for the request, e.g. "Cal,atm"
+
 # Configuration endpoints
 @app.get("/api/config")
 def get_configuration():
@@ -277,6 +281,19 @@ def reset_controllers():
     """Reset PID controllers (use after manual intervention)"""
     dosing_engine.reset_controllers()
     return {"status": "controllers_reset"}
+
+@app.post("/api/calibrate")
+def send_calibration_command(request: CalibrationRequest):
+    """Passes a calibration string direct to the ESP32"""
+    # e.g., hydro/hydro-misc-01/control/calibrate/do
+    topic = f"hydro/{config_mgr.config.mqtt['device_id']}/control/calibrate/{request.sensor}"
+    client.publish(topic, request.command)
+    print(f"Calibration command: sensor={request.sensor} command='{request.command}'")
+    return {
+        "status": "command_sent",
+        "sensor": request.sensor,
+        "command": request.command
+    }
 
 # --- Actuator Endpoints ---
 

@@ -59,6 +59,17 @@ export const api = {
         return await response.json();
     },
 
+    // --- Calibration ---
+    sendCalibration: async (sensor, command) => {
+        const response = await fetch(`${API_BASE_URL}/api/calibrate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sensor, command })
+        });
+        if (!response.ok) throw new Error(`Failed to send calibration command to ${sensor}`);
+        return await response.json();
+    },
+
     // --- Actuator Controls ---
 
     // Toggle solenoid valve (index 0-7)

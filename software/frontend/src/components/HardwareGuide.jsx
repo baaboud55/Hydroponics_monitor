@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const GUIDE_STEPS = [
     {
@@ -26,8 +27,16 @@ const GUIDE_STEPS = [
 ];
 
 export default function HardwareGuide({ onNavigate }) {
+    const { t, lang } = useLanguage();
     const [currentStep, setCurrentStep] = useState(0);
-    const step = GUIDE_STEPS[currentStep];
+
+    const translatedSteps = GUIDE_STEPS.map((step, idx) => ({
+        ...step,
+        title: t(`step${idx + 1}Title`),
+        description: t(`step${idx + 1}Desc`),
+    }));
+
+    const step = translatedSteps[currentStep];
 
     const isFirstStep = currentStep === 0;
     const isLastStep = currentStep === GUIDE_STEPS.length - 1;
@@ -48,11 +57,11 @@ export default function HardwareGuide({ onNavigate }) {
                     onClick={() => onNavigate('main-menu')}
                     className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
                 >
-                    <ArrowLeft className="w-5 h-5" />
-                    <span>Back to Hub</span>
+                    <ArrowLeft className="w-5 h-5 transform rtl:-scale-x-100" />
+                    <span>{t('backToMenu')}</span>
                 </button>
                 <div className="text-sm font-medium text-slate-500">
-                    Hardware Installation Guide
+                    {t('installationGuide')}
                 </div>
             </header>
 
@@ -75,7 +84,7 @@ export default function HardwareGuide({ onNavigate }) {
                 </div>
 
                 {/* Right: Text & Controls Area */}
-                <div className="w-full lg:w-[450px] p-8 lg:p-12 lg:border-l lg:border-slate-800/50 flex flex-col justify-center bg-slate-900/20">
+                <div className="w-full lg:w-[450px] p-8 lg:p-12 lg:border-s lg:border-slate-800/50 flex flex-col justify-center bg-slate-900/20 text-start">
 
                     {/* Step Indicators */}
                     <div className="flex items-center gap-3 mb-10">
@@ -87,7 +96,7 @@ export default function HardwareGuide({ onNavigate }) {
                     {/* Step Content */}
                     <div className="fade-in-text" key={`text-${step.id}`}>
                         <div className="text-blue-400 font-semibold tracking-wide text-xs uppercase mb-3">
-                            Step {currentStep + 1} of {GUIDE_STEPS.length}
+                            {t('step')} {currentStep + 1} {t('of')} {GUIDE_STEPS.length}
                         </div>
                         <h1 className="text-3xl font-bold mb-4 text-white">
                             {step.title}
@@ -100,12 +109,14 @@ export default function HardwareGuide({ onNavigate }) {
                         <div className="bg-slate-900 border border-slate-700 rounded-xl p-5 mb-10">
                             <h4 className="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">
                                 <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                                Pro Tips
+                                {lang === 'en' ? 'Pro Tips' : 'نصائح هامة'}
                             </h4>
                             <ul className="space-y-2">
                                 {step.tips.map((tip, idx) => (
                                     <li key={idx} className="text-sm text-slate-500 flex items-start gap-2">
-                                        <span className="text-slate-700 mt-0.5">•</span> {tip}
+                                        <span className="text-slate-700 mt-0.5">•</span>
+                                        {/* Translated Tips */}
+                                        <span className="text-start">{t(`tip${currentStep + 1}_${idx + 1}`)}</span>
                                     </li>
                                 ))}
                             </ul>
@@ -119,7 +130,7 @@ export default function HardwareGuide({ onNavigate }) {
                             disabled={isFirstStep}
                             className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all ${isFirstStep ? 'bg-slate-900 text-slate-600 cursor-not-allowed' : 'bg-slate-800 text-white hover:bg-slate-700'}`}
                         >
-                            Previous
+                            {lang === 'en' ? 'Previous' : 'السابق'}
                         </button>
 
                         {isLastStep ? (
@@ -127,14 +138,14 @@ export default function HardwareGuide({ onNavigate }) {
                                 onClick={() => onNavigate('main-menu')}
                                 className="flex-1 py-3 px-4 rounded-xl font-medium bg-emerald-500 text-white hover:bg-emerald-400 transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
                             >
-                                Setup Complete <CheckCircle2 className="w-4 h-4" />
+                                {t('completeSetup')} <CheckCircle2 className="w-4 h-4" />
                             </button>
                         ) : (
                             <button
                                 onClick={nextStep}
-                                className="flex-1 py-3 px-4 rounded-xl font-medium bg-blue-600 text-white hover:bg-blue-500 transition-all flex flex-row-reverse items-center justify-center gap-2 shadow-lg shadow-blue-500/20"
+                                className="flex-1 py-3 px-4 rounded-xl font-medium bg-blue-600 text-white hover:bg-blue-500 transition-all flex rtl:flex-row flex-row-reverse items-center justify-center gap-2 shadow-lg shadow-blue-500/20"
                             >
-                                <ArrowRight className="w-4 h-4" /> Next Step
+                                <ArrowRight className="w-4 h-4 transform rtl:-scale-x-100" /> {t('nextStep')}
                             </button>
                         )}
                     </div>

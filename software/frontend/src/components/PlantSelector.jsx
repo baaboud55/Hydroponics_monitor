@@ -1,5 +1,6 @@
 import React from 'react';
-import { Leaf, Droplets, ThermometerSun } from 'lucide-react';
+import { Leaf, Droplets, ThermometerSun, ArrowRight } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const PLANT_TYPES = [
     {
@@ -45,6 +46,14 @@ const PLANT_TYPES = [
 ];
 
 export default function PlantSelector({ onSelectPlant }) {
+    const { t } = useLanguage();
+
+    const translatedPlants = PLANT_TYPES.map(p => ({
+        ...p,
+        name: t(p.id),
+        description: t(`${p.id}Desc`)
+    }));
+
     return (
         <div className="min-h-screen bg-slate-900 text-slate-100 py-12 px-4 sm:px-6 lg:px-8 flex flex-col items-center relative overflow-hidden">
             {/* Background Glow */}
@@ -53,28 +62,28 @@ export default function PlantSelector({ onSelectPlant }) {
             <div className="text-center mb-16 relative z-10 w-full max-w-4xl fade-up">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-sm font-medium mb-6">
                     <Leaf className="w-4 h-4" />
-                    <span>HydroMonitor Smart Grow</span>
+                    <span>{t('intelligentGrow')}</span>
                 </div>
                 <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight mb-6 bg-gradient-to-br from-white to-slate-400 bg-clip-text text-transparent">
-                    What are we growing today?
+                    {t('whatGrowing')}
                 </h1>
                 <p className="text-xl text-slate-400 max-w-2xl mx-auto">
-                    Choose what you want to grow, and our smart system will automatically feed, water, and care for your plants.
+                    {t('selectorSub')}
                 </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-7xl relative z-10">
-                {PLANT_TYPES.map((plant, index) => (
+                {translatedPlants.map((plant, index) => (
                     <div
                         key={plant.id}
                         onClick={() => onSelectPlant(plant)}
-                        className={`fade-up group relative p-6 rounded-3xl bg-slate-800/50 backdrop-blur-xl border border-slate-700 hover:border-slate-500 transition-all cursor-pointer overflow-hidden hover:-translate-y-2 hover:shadow-2xl hover:shadow-emerald-500/10`}
+                        className={`fade-up group relative p-6 rounded-3xl bg-slate-800/50 backdrop-blur-xl border border-slate-700 hover:border-slate-500 transition-all cursor-pointer overflow-hidden hover:-translate-y-2 hover:shadow-2xl hover:shadow-emerald-500/10 text-start`}
                         style={{ animationDelay: `${index * 0.1}s` }}
                     >
                         {/* Hover Gradient Overlay */}
                         <div className={`absolute inset-0 bg-gradient-to-br ${plant.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}></div>
 
-                        <div className="text-6xl mb-6 transform group-hover:scale-110 transition-transform duration-300 drop-shadow-2xl">
+                        <div className="text-6xl mb-6 transform group-hover:scale-110 transition-transform duration-300 drop-shadow-2xl text-center md:text-start">
                             {plant.image}
                         </div>
 
@@ -83,21 +92,21 @@ export default function PlantSelector({ onSelectPlant }) {
 
                         <div className="space-y-3">
                             <div className="flex items-center justify-between text-xs bg-slate-900/50 p-2 rounded-lg border border-slate-700/50">
-                                <span className="flex items-center gap-1 text-slate-400"><ThermometerSun className="w-3.5 h-3.5" /> Temp</span>
+                                <span className="flex items-center gap-1 text-slate-400"><ThermometerSun className="w-3.5 h-3.5" /> {t('temp')}</span>
                                 <span className="font-semibold text-slate-200">{plant.idealTemp}</span>
                             </div>
                             <div className="flex items-center justify-between text-xs bg-slate-900/50 p-2 rounded-lg border border-slate-700/50">
-                                <span className="flex items-center gap-1 text-slate-400"><Droplets className="w-3.5 h-3.5" /> Water pH</span>
+                                <span className="flex items-center gap-1 text-slate-400"><Droplets className="w-3.5 h-3.5" /> {t('waterPh')}</span>
                                 <span className="font-semibold text-slate-200">{plant.idealPh}</span>
                             </div>
                             <div className="flex items-center justify-between text-xs bg-slate-900/50 p-2 rounded-lg border border-slate-700/50">
-                                <span className="flex items-center gap-1 text-slate-400"><Droplets className="w-3.5 h-3.5" /> Plant Food</span>
+                                <span className="flex items-center gap-1 text-slate-400"><Droplets className="w-3.5 h-3.5" /> {t('plantFood')}</span>
                                 <span className="font-semibold text-slate-200">{plant.idealEc}</span>
                             </div>
                         </div>
 
                         <div className="mt-6 pt-4 border-t border-slate-700/50 flex items-center text-sm font-medium text-emerald-400 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                            Start Growing &rarr;
+                            {t('startGrowing')} <ArrowRight className="w-4 h-4 ms-2 transform rtl:-scale-x-100" />
                         </div>
                     </div>
                 ))}

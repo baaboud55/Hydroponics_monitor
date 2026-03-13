@@ -221,4 +221,5 @@
  .pio/libdeps/esp32dev/OneWire/OneWire.h \
  .pio/libdeps/esp32dev/OneWire/util/OneWire_direct_regtype.h \
  .pio/libdeps/esp32dev/DallasTemperature/DallasTemperature.h \
- .pio/libdeps/esp32dev/DHT\ sensor\ library/DHT.h
+ .pio/libdeps/esp32dev/DHT\ sensor\ library/DHT.h \
+ C:/Users/baabo/.platformio/packages/framework-arduinoespressif32/libraries/Preferences/src/Preferences.h
