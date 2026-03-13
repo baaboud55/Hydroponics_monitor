@@ -56,6 +56,15 @@ class SystemConfiguration(BaseModel):
             max_value=3.0
         )
     )
+    do: ParameterConfig = Field(
+        default=ParameterConfig(
+            target=8.0,
+            tolerance=1.0,
+            enabled=False,
+            min_value=4.0,
+            max_value=12.0
+        )
+    )
     
     # PID tuning parameters (advanced)
     pid_tuning: Dict[str, Dict[str, float]] = Field(
@@ -146,6 +155,10 @@ class ConfigManager:
                 current = self.config.ec.model_dump()
                 current.update(updates)
                 self.config.ec = ParameterConfig(**current)
+            elif param_name == "do":
+                current = self.config.do.model_dump()
+                current.update(updates)
+                self.config.do = ParameterConfig(**current)
             else:
                 logger.warning(f"Unknown parameter: {param_name}")
                 return False
@@ -172,21 +185,24 @@ class ConfigManager:
         """Get all target values"""
         return {
             "ph": self.config.ph.target,
-            "ec": self.config.ec.target
+            "ec": self.config.ec.target,
+            "do": self.config.do.target
         }
     
     def get_tolerances(self) -> Dict[str, float]:
         """Get all tolerance values"""
         return {
             "ph": self.config.ph.tolerance,
-            "ec": self.config.ec.tolerance
+            "ec": self.config.ec.tolerance,
+            "do": self.config.do.tolerance
         }
     
     def get_automation_status(self) -> Dict[str, bool]:
         """Get automation enabled status for all parameters"""
         return {
             "ph": self.config.ph.enabled,
-            "ec": self.config.ec.enabled
+            "ec": self.config.ec.enabled,
+            "do": self.config.do.enabled
         }
     
     def update_pid_tuning(self, param_name: str, kp: float, ki: float, kd: float) -> bool:

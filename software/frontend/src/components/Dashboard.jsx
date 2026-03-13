@@ -47,6 +47,13 @@ export default function Dashboard({ systemData, isConnected }) {
                 status: 'normal'
             },
             {
+                type: 'do',
+                label: 'Dissolved O₂',
+                value: data?.do?.toFixed(1) ?? '--',
+                unit: 'mg/L',
+                status: data?.do ? (data.do >= 6.0 ? 'normal' : 'warning') : 'normal'
+            },
+            {
                 type: 'humidity',
                 label: 'Humidity',
                 value: data?.humidity?.toFixed(0) ?? '--',

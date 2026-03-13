@@ -7,9 +7,11 @@ Users set target values, and the system automatically doses to maintain them.
 
 import time
 import logging
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, Any
 from datetime import datetime, timedelta
 from dataclasses import dataclass
+
+import database
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -95,27 +97,33 @@ class PIDController:
 class SafetyManager:
     """Manages safety limits and validates dosing actions"""
     
-    # Physical limits for sensors (reject invalid readings)
-    PH_MIN = 0.0
-    PH_MAX = 14.0
-    EC_MIN = 0.0
-    EC_MAX = 10.0  # mS/cm
-    
-    # Dosing limits
-    MAX_PH_DOSE_ML = 50.0  # Max ml per interval
-    MAX_EC_DOSE_ML = 100.0
-    MIN_DOSE_INTERVAL = 300  # seconds (5 minutes)
-    
     def __init__(self):
         self._last_ph_dose_time = datetime.min
         self._last_ec_dose_time = datetime.min
         
+        # Instance variables for safety bounds (now dynamically configurable)
+        self.bounds = {
+            "ph": {"min": 0.0, "max": 14.0},
+            "ec": {"min": 0.0, "max": 10.0}
+        }
+        self.limits = {
+            "max_ph_dose_ml": 50.0,
+            "max_ec_dose_ml": 100.0,
+            "min_dose_interval_sec": 300
+        }
+
+    def update_bounds(self, config_safety: Dict[str, Any], config_bounds: Dict[str, Dict[str, float]]):
+        """Update safety bounds dynamically from the ConfigManager."""
+        self.limits.update(config_safety)
+        self.bounds.update(config_bounds)
+        logger.info(f"Safety limits updated: {self.limits}")
+        logger.info(f"Safety bounds updated: {self.bounds}")
+        
     def validate_sensor_reading(self, sensor_type: str, value: float) -> bool:
         """Check if sensor reading is within physical limits"""
-        if sensor_type == "ph":
-            return self.PH_MIN <= value <= self.PH_MAX
-        elif sensor_type == "ec":
-            return self.EC_MIN <= value <= self.EC_MAX
+        if sensor_type in self.bounds:
+            b = self.bounds[sensor_type]
+            return b["min"] <= value <= b["max"]
         return True
     
     def can_dose(self, parameter: str) -> Tuple[bool, str]:
@@ -126,18 +134,19 @@ class SafetyManager:
             (allowed: bool, reason: str)
         """
         now = datetime.now()
+        interval = self.limits.get("min_dose_interval_sec", 300)
         
         if parameter == "ph":
             time_since_last = (now - self._last_ph_dose_time).total_seconds()
-            if time_since_last < self.MIN_DOSE_INTERVAL:
-                wait_time = int(self.MIN_DOSE_INTERVAL - time_since_last)
+            if time_since_last < interval:
+                wait_time = int(interval - time_since_last)
                 return False, f"pH dosing on cooldown ({wait_time}s remaining)"
             return True, "OK"
             
         elif parameter == "ec":
             time_since_last = (now - self._last_ec_dose_time).total_seconds()
-            if time_since_last < self.MIN_DOSE_INTERVAL:
-                wait_time = int(self.MIN_DOSE_INTERVAL - time_since_last)
+            if time_since_last < interval:
+                wait_time = int(interval - time_since_last)
                 return False, f"EC dosing on cooldown ({wait_time}s remaining)"
             return True, "OK"
             
@@ -151,13 +160,15 @@ class SafetyManager:
             (allowed: bool, reason: str)
         """
         if parameter == "ph":
-            if amount_ml > self.MAX_PH_DOSE_ML:
-                return False, f"pH dose exceeds maximum ({self.MAX_PH_DOSE_ML}ml)"
+            max_dose = self.limits.get("max_ph_dose_ml", 50.0)
+            if amount_ml > max_dose:
+                return False, f"pH dose exceeds maximum ({max_dose}ml)"
             return True, "OK"
             
         elif parameter == "ec":
-            if amount_ml > self.MAX_EC_DOSE_ML:
-                return False, f"EC dose exceeds maximum ({self.MAX_EC_DOSE_ML}ml)"
+            max_dose = self.limits.get("max_ec_dose_ml", 100.0)
+            if amount_ml > max_dose:
+                return False, f"EC dose exceeds maximum ({max_dose}ml)"
             return True, "OK"
             
         return False, "Unknown parameter"
@@ -202,17 +213,20 @@ class DosingEngine:
             "ec": False,
         }
         
-        # Dosing history
-        self.dosing_history = []
+        # Removed memory array: self.dosing_history = []
         
     def update_configuration(self, config: Dict):
-        """Update target values and automation settings from user configuration"""
+        """Update target values, automation settings, and safety bounds from user configuration"""
         if "targets" in config:
             self.targets.update(config["targets"])
         if "tolerances" in config:
             self.tolerances.update(config["tolerances"])
         if "automation_enabled" in config:
             self.automation_enabled.update(config["automation_enabled"])
+            
+        # Update safety bounds dynamically if passed
+        if "safety_limits" in config and "bounds" in config:
+            self.safety.update_bounds(config["safety_limits"], config["bounds"])
             
         logger.info(f"Configuration updated: targets={self.targets}, enabled={self.automation_enabled}")
     
@@ -309,25 +323,21 @@ class DosingEngine:
         return actions
     
     def _log_dose(self, parameter: str, amount_ml: float, current: float, target: float):
-        """Log dosing action to history"""
-        entry = {
-            "timestamp": datetime.now().isoformat(),
-            "parameter": parameter,
-            "amount_ml": amount_ml,
-            "current_value": current,
-            "target_value": target
-        }
-        self.dosing_history.append(entry)
-        
-        # Keep only last 100 entries
-        if len(self.dosing_history) > 100:
-            self.dosing_history = self.dosing_history[-100:]
-            
+        """Log dosing action to SQLite history"""
+        ts = datetime.now().isoformat()
+        database.log_dose(
+            timestamp=ts,
+            parameter=parameter,
+            amount_ml=amount_ml,
+            current_value=current,
+            target_value=target,
+            reason="Auto PID target maintenance"
+        )
         logger.info(f"Dosing: {parameter} {amount_ml:.1f}ml (current={current:.2f}, target={target:.2f})")
     
     def get_history(self, limit: int = 50) -> list:
-        """Get recent dosing history"""
-        return self.dosing_history[-limit:]
+        """Get recent dosing history from SQLite"""
+        return database.get_recent_doses(limit)
     
     def reset_controllers(self):
         """Reset all PID controllers (useful after manual intervention)"""

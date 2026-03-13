@@ -5,7 +5,8 @@ import { api } from '../services/api';
 export default function ParameterConfig({ systemData }) {
     const [config, setConfig] = useState({
         ph: { target: 6.0, tolerance: 0.2, enabled: false, min_value: 4.0, max_value: 8.0 },
-        ec: { target: 1.5, tolerance: 0.1, enabled: false, min_value: 0.5, max_value: 3.0 }
+        ec: { target: 1.5, tolerance: 0.1, enabled: false, min_value: 0.5, max_value: 3.0 },
+        do: { target: 8.0, tolerance: 1.0, enabled: false, min_value: 4.0, max_value: 12.0 }
     });
 
     const [isSaving, setIsSaving] = useState(false);
@@ -21,7 +22,8 @@ export default function ParameterConfig({ systemData }) {
             const data = await api.getConfig();
             setConfig({
                 ph: data.ph,
-                ec: data.ec
+                ec: data.ec,
+                do: data.do
             });
         } catch (error) {
             console.error('Failed to load config:', error);
@@ -32,6 +34,7 @@ export default function ParameterConfig({ systemData }) {
     const currentValues = {
         ph: systemData?.ph ?? 0,
         ec: systemData?.ec ?? 0,
+        do: systemData?.do ?? 0,
     };
 
     const handleUpdateParameter = (parameter, field, value) => {
@@ -47,6 +50,7 @@ export default function ParameterConfig({ systemData }) {
         try {
             await api.updateParameter('ph', config.ph);
             await api.updateParameter('ec', config.ec);
+            await api.updateParameter('do', config.do);
             setMessage({ type: 'success', text: 'Configuration saved successfully!' });
         } catch (error) {
             setMessage({ type: 'error', text: 'Failed to save configuration' });
@@ -212,6 +216,13 @@ export default function ParameterConfig({ systemData }) {
                     label="EC (Nutrients)"
                     unit="mS/cm"
                     color="purple"
+                />
+                <ParameterControl
+                    parameter="do"
+                    icon={Droplet}
+                    label="Dissolved Oxygen (DO)"
+                    unit="mg/L"
+                    color="sky"
                 />
             </div>
 

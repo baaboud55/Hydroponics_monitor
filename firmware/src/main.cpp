@@ -3,6 +3,7 @@
 #include <HydroActuators.h>
 #include <HydroMQTT.h>
 #include <HydroDosingPumps.h>
+#include <HydroSensors.h>
 
 // Shift Register Pins
 #define PIN_SR_DATA 26
@@ -16,6 +17,12 @@
 #define PIN_DOSING_PH 21
 #define PIN_DOSING_AUX 22
 
+// Sensor Pins
+#define PIN_SENSOR_DS18B20 4
+#define PIN_SENSOR_DHT 5
+#define PIN_SENSOR_LEVEL 32
+#define PIN_SENSOR_CURRENT 35
+
 // MQTT Settings (Hardcoded for now, should be dynamic later)
 #define MQTT_SERVER "test.mosquitto.org"
 #define MQTT_PORT 1883
@@ -23,6 +30,7 @@
 
 HydroActuators actuators(PIN_SR_DATA, PIN_SR_CLOCK, PIN_SR_LATCH, PIN_SR_CLEAR);
 HydroDosingPumps dosingPumps(PIN_DOSING_A, PIN_DOSING_B, PIN_DOSING_PH, PIN_DOSING_AUX);
+HydroSensors sensors(PIN_SENSOR_DS18B20, PIN_SENSOR_DHT, PIN_SENSOR_LEVEL, PIN_SENSOR_CURRENT);
 WiFiClient espClient;
 HydroMQTT mqtt(espClient, MQTT_SERVER, MQTT_PORT, DEVICE_ID);
 
@@ -101,6 +109,10 @@ void setup() {
   // Initialize Dosing Pumps
   dosingPumps.begin();
 
+  // Initialize Sensors
+  sensors.begin();
+  Serial.println("Sensors Initialized");
+
   WiFiManager wm;
   
   // wm.resetSettings(); // Uncomment to wipe settings for testing
@@ -124,12 +136,28 @@ void setup() {
       mqtt.begin();
       // Send Discovery
       mqtt.sendDiscovery("sensor", "uptime", "Uptime", "s", "duration");
+      mqtt.sendDiscovery("sensor", "do", "Dissolved Oxygen", "mg/L", "concentration");
   }
 }
 
 void loop() {
   mqtt.loop();
-  dosingPumps.update(); // Handle timed dosing
+  
+  // Safe Water Level Check
+  if (!sensors.isWaterLevelOk()) {
+      // Emergency Cutoff: Ensure circulating pumps and dosing stop if tank is empty
+      // Example targets pump 0 (main pump) — expanding later
+      actuators.setPump(0, false);
+      actuators.commit();
+      
+      // We could also force dosingPumps to halt here if it had a hard stop method
+      // For now, logging will show it's dry.
+  } else {
+      dosingPumps.update(); // Handle timed dosing normally
+  }
+
+  // Update Non-blocking sensors
+  sensors.update();
 
   // Blink Debug LED to show activity
   static bool ledState = false;
@@ -141,21 +169,28 @@ void loop() {
       actuators.setDebugLed(ledState);
       actuators.commit();
       
-      // Publish uptime
+      // Publish uptime and real sensors
       if (mqtt.isConnected()) {
           mqtt.publishSensor("uptime", millis() / 1000.0);
           
-          // Read and Publish Sensors (Raw values for now)
-          // pH and EC
-          mqtt.publishSensor("ph1_raw", analogRead(36));
-          mqtt.publishSensor("ph2_raw", analogRead(39));
-          mqtt.publishSensor("ec1_raw", analogRead(34));
-          mqtt.publishSensor("ec2_raw", analogRead(33));
+          mqtt.publishSensor("water_temp", sensors.getWaterTemp());
+          mqtt.publishSensor("air_temp", sensors.getAirTemp());
+          mqtt.publishSensor("humidity", sensors.getHumidity());
+          mqtt.publishSensor("power_current", sensors.getCurrent());
+          mqtt.publishSensor("do", sensors.getDO());
           
-          // Publish Dosing Pump Status
+          // Publish Water Level (float switch maps to 100% or 0% for the UI)
+          mqtt.publishSensor("water_level", sensors.isWaterLevelOk() ? 100.0 : 0.0);
+          
+          // Publish Dosing Pump Status (Speed percent)
           for (int i = 0; i < 4; i++) {
               String pumpName = "dosing" + String(i) + "_speed";
               mqtt.publishSensor(pumpName.c_str(), dosingPumps.getSpeed(i));
+          }
+
+          // Safety alert via MQTT if critical
+          if (!sensors.isWaterLevelOk()) {
+             mqtt.publishState("alert", "WATER_LEVEL_CRITICAL");
           }
       }
   }

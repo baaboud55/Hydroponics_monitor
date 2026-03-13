@@ -31,6 +31,8 @@ firmware/build/
 # Runtime / Machine-specific config
 # ===========================
 software/backend/config.json
+*.db
+*.sqlite
 
 # ===========================
 # IDE / OS
