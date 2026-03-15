@@ -13,26 +13,23 @@ const translations = {
         launchApp: "⚡ Launch the App",
         viewGithub: "View on GitHub ↗",
 
-        // Bento Marketing
-        bentoHeroTitle1: "Smart Growing.",
-        bentoHeroTitle2: "Zero Effort.",
-        bentoHeroSub: "HydroMonitor takes the guesswork out of growing. It constantly watches your water, temperature, and plant food — then automatically adds exactly what your plants need.",
-        bentoScrollPrompt: "SCROLL TO EXPLORE ↓",
+        // Warm Minimalism Marketing
+        heroTitle1: "Nature,",
+        heroTitle2: "Automated.",
+        heroSub: "HydroMonitor seamlessly blends sustainable vertical farming with intelligent automation. Bring the farm to your kitchen with absolutely zero effort.",
+        scrollPrompt: "SCROLL TO EXPLORE ↓",
         
-        bentoSensorBadge: "Precision Sensors",
-        bentoSensorTitle: "24/7 Quality Checks",
-        bentoSensorSub: "Industrial-grade pH and EC probes monitor your reservoir water round the clock.",
+        feature1Title: "90% Less Water",
+        feature1Sub: "Our closed-loop reservoir recirculates every drop, dramatically reducing water consumption compared to traditional soil farming.",
         
-        bentoPumpBadge: "Autonomous Dosing",
-        bentoPumpTitle: "Perfect Nutrients",
-        bentoPumpSub: "Micro-dosing pumps automatically adjust pH and plant food levels with surgical precision.",
+        feature2Title: "Zero-Waste Growth",
+        feature2Sub: "Food-grade PVC channels provide the perfect environment for roots to thrive without soil runoff or plastic pot waste.",
         
-        bentoHubBadge: "Smart Hub",
-        bentoHubTitle: "The Brains",
-        bentoHubSub: "Wi-Fi enabled control center keeps you connected to your plants from anywhere.",
+        feature3Title: "Biodegradable Pods",
+        feature3Sub: "Plant directly into organic, compostable grow media. Clean, sustainable, and perfect for your indoor environment.",
         
-        bentoActionTitle: "Take Control.",
-        bentoActionSub: "Experience the easiest way to grow healthy plants at home.",
+        actionTitle: "Cultivate Wellness.",
+        actionSub: "Experience the cleanest, easiest way to grow healthy food at home.",
 
         // MainMenu (Legacy Cards)
         welcomeTitle: "Grow plants easily,",
@@ -211,26 +208,23 @@ const translations = {
         launchApp: "⚡ بدء التطبيق",
         viewGithub: "عرض على GitHub ↖",
 
-        // Bento Marketing
-        bentoHeroTitle1: "زراعة ذكية.",
-        bentoHeroTitle2: "بدون مجهود.",
-        bentoHeroSub: "نظام هايدرومونيتور يزيل التخمين من الزراعة. يراقب باستمرار مستويات المياه والحرارة وغذاء النبات — ثم يضيف تلقائياً ما تحتاجه نباتاتك بالضبط لتحى بصحة ممتازة.",
-        bentoScrollPrompt: "قم بالتمرير للاكتشاف ↓",
+        // Warm Minimalism Marketing
+        heroTitle1: "الطبيعة،",
+        heroTitle2: "مؤتمتة.",
+        heroSub: "يمزج هايدرومونيتور بسلاسة بين الزراعة العمودية المستدامة والأتمتة الذكية. اجلب المزرعة إلى مطبخك بدون أي مجهود.",
+        scrollPrompt: "قم بالتمرير للاكتشاف ↓",
         
-        bentoSensorBadge: "مستشعرات دقيقة",
-        bentoSensorTitle: "فحوصات مستمرة",
-        bentoSensorSub: "مجسات صناعية لحموضة وغذاء المياه تراقب خزانك على مدار الساعة.",
+        feature1Title: "مياه أقل بـ 90%",
+        feature1Sub: "يعيد خزاننا المغلق تدوير كل قطرة، مما يقلل بشكل كبير من استهلاك المياه مقارنة بالزراعة التقليدية في التربة.",
         
-        bentoPumpBadge: "ضخ تلقائي",
-        bentoPumpTitle: "تغذية مثالية",
-        bentoPumpSub: "مضخات دقيقة تعدل مستويات الحموضة وغذاء النبات بدقة جراحية.",
+        feature2Title: "نمو بلا نفايات",
+        feature2Sub: "توفر قنوات PVC الآمنة غذائياً البيئة المثالية لازدهار الجذور دون تسرب للتربة أو نفايات من الأواني البلاستيكية.",
         
-        bentoHubBadge: "المركز الذكي",
-        bentoHubTitle: "العقل المدبر",
-        bentoHubSub: "مركز تحكم متصل بشبكة Wi-Fi يبقيك على اتصال بنباتاتك من أي مكان.",
+        feature3Title: "حوافظ قابلة للتحلل",
+        feature3Sub: "ازرع مباشرة في وسائط نمو عضوية وقابلة للتحلل. نظيفة ومستدامة ومثالية لبيئتك الداخلية.",
         
-        bentoActionTitle: "تولَّ القيادة.",
-        bentoActionSub: "جرب أسهل طريقة لزراعة نباتات صحية في منزلك.",
+        actionTitle: "ازرع الصحة.",
+        actionSub: "جرب أنظف وأسهل طريقة لزراعة طعام صحي في المنزل.",
 
         // MainMenu (Legacy Cards)
         welcomeTitle: "ازرع نباتاتك بسهولة،",
