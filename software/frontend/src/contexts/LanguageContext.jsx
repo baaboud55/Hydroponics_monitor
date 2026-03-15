@@ -7,9 +7,6 @@ const translations = {
         liveDemo: "Live Demo →",
         smartGrowing: "Smart Home Plant Care",
         autonomousControl: "Automatic Plant Care",
-        smartGrowingTitle1: "Smart Growing.",
-        smartGrowingTitle2: "Zero Effort.",
-        heroSub: "HydroMonitor takes the guesswork out of growing. It constantly watches your water, temperature, and plant food — then automatically adds exactly what your plants need to stay perfectly healthy.",
         launchApp: "⚡ Launch the App",
         viewGithub: "View on GitHub ↗",
 
@@ -202,9 +199,6 @@ const translations = {
         liveDemo: "عرض تجريبي ←",
         smartGrowing: "العناية الذكية بالنباتات",
         autonomousControl: "رعاية آلية للنباتات",
-        smartGrowingTitle1: "زراعة ذكية.",
-        smartGrowingTitle2: "بدون أي مجهود.",
-        heroSub: "نظام HydroMonitor يزيل التخمين من الزراعة. يراقب باستمرار مستويات الماء والحرارة وغذاء النبات، ثم يضيف تلقائياً ما تحتاجه نباتاتك لتبقى في أفضل صحة.",
         launchApp: "⚡ بدء التطبيق",
         viewGithub: "عرض على GitHub ↖",
 
