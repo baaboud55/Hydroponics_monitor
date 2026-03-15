@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Droplet, Zap, Save, AlertCircle } from 'lucide-react';
 import { api } from '../services/api';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function ParameterConfig({ systemData }) {
+    const { t } = useLanguage();
     const [config, setConfig] = useState({
         ph: { target: 6.0, tolerance: 0.2, enabled: false, min_value: 4.0, max_value: 8.0 },
         ec: { target: 1.5, tolerance: 0.1, enabled: false, min_value: 0.5, max_value: 3.0 },
@@ -51,9 +53,9 @@ export default function ParameterConfig({ systemData }) {
             await api.updateParameter('ph', config.ph);
             await api.updateParameter('ec', config.ec);
             await api.updateParameter('do', config.do);
-            setMessage({ type: 'success', text: 'Configuration saved successfully!' });
+            setMessage({ type: 'success', text: t('configSaved') });
         } catch (error) {
-            setMessage({ type: 'error', text: 'Failed to save configuration' });
+            setMessage({ type: 'error', text: t('configFailed') });
         } finally {
             setIsSaving(false);
             setTimeout(() => setMessage(null), 4000);
@@ -89,7 +91,7 @@ export default function ParameterConfig({ systemData }) {
                         </div>
                         <div>
                             <h3 className="font-semibold text-gray-900">{label}</h3>
-                            <p className="text-sm text-gray-500">Autonomous Control</p>
+                            <p className="text-sm text-gray-500">{t('autonomousControlAdmin')}</p>
                         </div>
                     </div>
 
@@ -107,14 +109,14 @@ export default function ParameterConfig({ systemData }) {
                 {/* Current vs Target */}
                 <div className="mb-4 p-3 bg-gray-50 rounded-lg">
                     <div className="flex justify-between items-center">
-                        <div>
-                            <span className="text-xs text-gray-500">Current</span>
+                        <div className="text-start">
+                            <span className="text-xs text-gray-500">{t('current')}</span>
                             <p className={`text-2xl font-bold ${withinTolerance ? 'text-green-600' : 'text-orange-600'}`}>
                                 {current.toFixed(1)} {unit}
                             </p>
                         </div>
-                        <div className="text-right">
-                            <span className="text-xs text-gray-500">Target</span>
+                        <div className="text-end">
+                            <span className="text-xs text-gray-500">{t('targetRaw')}</span>
                             <p className="text-2xl font-bold text-gray-900">
                                 {cfg.target.toFixed(1)} {unit}
                             </p>
@@ -123,15 +125,15 @@ export default function ParameterConfig({ systemData }) {
                     {!withinTolerance && cfg.enabled && (
                         <div className="mt-2 flex items-center gap-1 text-xs text-orange-600">
                             <AlertCircle className="w-3 h-3" />
-                            <span>Outside tolerance, dosing active</span>
+                            <span>{t('outsideTolerance')}</span>
                         </div>
                     )}
                 </div>
 
                 {/* Target Value Input */}
-                <div className="mb-4">
+                <div className="mb-4 text-start">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Target Value
+                        {t('targetValue')}
                     </label>
                     <div className="flex items-center gap-2">
                         <button
@@ -159,9 +161,9 @@ export default function ParameterConfig({ systemData }) {
                 </div>
 
                 {/* Tolerance Slider */}
-                <div>
+                <div className="text-start">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Tolerance: ±{cfg.tolerance.toFixed(2)} {unit}
+                        {t('tolerance')}: ±{cfg.tolerance.toFixed(2)} {unit}
                     </label>
                     <input
                         type="range"
@@ -170,11 +172,11 @@ export default function ParameterConfig({ systemData }) {
                         min="0.05"
                         max="0.5"
                         step="0.05"
-                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer rtl:[direction:rtl]"
                     />
                     <div className="flex justify-between text-xs text-gray-500 mt-1">
-                        <span>Tight (0.05)</span>
-                        <span>Loose (0.5)</span>
+                        <span>{t('tight')} (0.05)</span>
+                        <span>{t('loose')} (0.5)</span>
                     </div>
                 </div>
             </div>
@@ -182,12 +184,12 @@ export default function ParameterConfig({ systemData }) {
     };
 
     return (
-        <div className="p-4 max-w-2xl mx-auto">
+        <div className="p-4 max-w-2xl mx-auto text-start">
             {/* Header */}
             <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-900">Parameter Configuration</h1>
+                <h1 className="text-2xl font-bold text-gray-900">{t('paramConfig')}</h1>
                 <p className="text-sm text-gray-600 mt-1">
-                    Set target values and enable automation for autonomous dosing
+                    {t('paramConfigDesc')}
                 </p>
             </div>
 
@@ -206,21 +208,21 @@ export default function ParameterConfig({ systemData }) {
                 <ParameterControl
                     parameter="ph"
                     icon={Droplet}
-                    label="pH Level"
+                    label={t('phLevel')}
                     unit="pH"
                     color="blue"
                 />
                 <ParameterControl
                     parameter="ec"
                     icon={Zap}
-                    label="EC (Nutrients)"
+                    label={t('plantFoodNutrients')}
                     unit="mS/cm"
                     color="purple"
                 />
                 <ParameterControl
                     parameter="do"
                     icon={Droplet}
-                    label="Dissolved Oxygen (DO)"
+                    label={t('dissolvedO2')}
                     unit="mg/L"
                     color="sky"
                 />
@@ -233,17 +235,17 @@ export default function ParameterConfig({ systemData }) {
                 className="w-full py-3 px-4 bg-blue-600 text-white rounded-lg font-medium shadow-sm hover:bg-blue-700 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 <Save className="w-5 h-5" />
-                {isSaving ? 'Saving...' : 'Save Configuration'}
+                {isSaving ? t('saving') : t('saveConfig')}
             </button>
 
             {/* Info Box */}
             <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <h4 className="font-semibold text-blue-900 mb-2">How It Works</h4>
+                <h4 className="font-semibold text-blue-900 mb-2">{t('howItWorks')}</h4>
                 <ul className="text-sm text-blue-800 space-y-1">
-                    <li>• Set your desired target values for pH and EC</li>
-                    <li>• Adjust tolerance to control how precisely the system maintains values</li>
-                    <li>• Enable automation to start autonomous dosing</li>
-                    <li>• The system will automatically dose to keep parameters within target ± tolerance</li>
+                    <li>• {t('howItWorks1')}</li>
+                    <li>• {t('howItWorks2')}</li>
+                    <li>• {t('howItWorks3')}</li>
+                    <li>• {t('howItWorks4')}</li>
                 </ul>
             </div>
         </div>

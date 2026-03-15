@@ -25,8 +25,14 @@ HydroSensors::HydroSensors(uint8_t oneWirePin, uint8_t dhtPin, uint8_t waterLeve
     _do = 0.0;
     _ph = 7.0; // Default safe ph
     _ec = 1.0; // Default safe ec
-    _phOffset = 0.0;
-    _ecOffset = 0.0;
+    _phIntercept = 1.65;
+    _phSlope = -5.7;
+    _lastPhVoltage = 1.65;
+    
+    _ecIntercept = 0.0;
+    _ecSlope = 1.5;
+    _lastEcVoltage = 0.0;
+    
     _lastDhtRead = 0;
     _lastDs18b20Read = 0;
 }
@@ -34,8 +40,10 @@ HydroSensors::HydroSensors(uint8_t oneWirePin, uint8_t dhtPin, uint8_t waterLeve
 void HydroSensors::begin() {
     // Load saved calibration values
     _preferences.begin("hydro_cal", false);
-    _phOffset = _preferences.getFloat("ph_offset", 0.0);
-    _ecOffset = _preferences.getFloat("ec_offset", 0.0);
+    _phIntercept = _preferences.getFloat("ph_intercept", 1.65);
+    _phSlope = _preferences.getFloat("ph_slope", -5.7);
+    _ecIntercept = _preferences.getFloat("ec_intercept", 0.0);
+    _ecSlope = _preferences.getFloat("ec_slope", 1.5);
 
     // Initialize DS18B20
     _ds18b20.begin();
@@ -160,29 +168,28 @@ void HydroSensors::_readPH() {
     // Voltage goes down as pH goes up. A rough slope is -5.7.
     // Assuming 1.65V = pH 7, 4095 = 3.3V
     float voltage = (rawVal / 4095.0) * 3.3;
-    float uncalibrated_ph = 7.0 + (voltage - 1.65) * -5.7; 
     
-    // Apply user calibration offset
-    float calculated_ph = uncalibrated_ph + _phOffset;
+    // EWMA Smoothing on the voltage directly
+    _lastPhVoltage = (0.1 * voltage) + (0.9 * _lastPhVoltage);
     
-    // EWMA Smoothing
-    _ph = (0.1 * calculated_ph) + (0.9 * _ph);
+    float calculated_ph = 7.0 + (_lastPhVoltage - _phIntercept) * _phSlope; 
+    _ph = calculated_ph;
 }
 
 void HydroSensors::_readEC() {
     // Read raw analog value (0-4095)
     int rawVal = analogRead(_ecPin);
     
-    // y = mx + b
-    // Rough estimation for EC mapping an analog voltage.
+    // Voltage
     float voltage = (rawVal / 4095.0) * 3.3;
-    float uncalibrated_ec = voltage * 1.5; // Dummy slope (e.g. 1V = 1.5 mS/cm)
     
-    // Apply user calibration offset
-    float calculated_ec = uncalibrated_ec + _ecOffset;
+    // EWMA Smoothing on the voltage directly
+    _lastEcVoltage = (0.1 * voltage) + (0.9 * _lastEcVoltage);
     
-    // EWMA Smoothing
-    _ec = (0.1 * calculated_ec) + (0.9 * _ec);
+    // y = mx + b
+    float calculated_ec = (_lastEcVoltage - _ecIntercept) * _ecSlope;
+    if (calculated_ec < 0) calculated_ec = 0;
+    _ec = calculated_ec;
 }
 
 float HydroSensors::getWaterTemp() {
@@ -227,31 +234,55 @@ void HydroSensors::processCalibration(String sensor, String command) {
         Serial2.print('\r');
         Serial.printf("Sent to DO UART: %s\\n", command.c_str());
     } else if (sensor == "ph") {
-        if (command.startsWith("cal,7,")) {
-            // Wait, the frontend might not append the reading properly if it simulates.
-            // Let's rely entirely on the firmware's internal reading when we get "cal,7"
-        }
-        
-        if (command == "cal,7") {
-            // We want the final _ph to equal 7.0.
-            // _ph = uncalibrated_ph + _phOffset. 
-            // So _phOffset = 7.0 - uncalibrated_ph
-            // Uncalibrated pH is our current reading minus the old offset
-            float uncalibrated_ph = _ph - _phOffset;
-            _phOffset = 7.0 - uncalibrated_ph;
-            _preferences.putFloat("ph_offset", _phOffset);
+        if (command.startsWith("cal,7")) {
+            // Midpoint Calibration (Zero point)
+            _phIntercept = _lastPhVoltage;
+            _preferences.putFloat("ph_intercept", _phIntercept);
+            Serial.printf("pH Cal 7: Intercept updated to %.2fV\n", _phIntercept);
+        } else if (command.startsWith("cal,4")) {
+            // Slope Calibration
+            // 4.0 = 7.0 + (voltage - intercept) * slope => slope = (4.0 - 7.0) / (voltage - intercept)
+            float vDiff = _lastPhVoltage - _phIntercept;
+            if (abs(vDiff) > 0.05) { // Prevent division by nearly zero
+                _phSlope = -3.0 / vDiff;
+                _preferences.putFloat("ph_slope", _phSlope);
+            }
+            Serial.printf("pH Cal 4: Slope updated to %.2f\n", _phSlope);
+        } else if (command.startsWith("cal,10")) {
+            // Alternative Slope Calibration
+            float vDiff = _lastPhVoltage - _phIntercept;
+            if (abs(vDiff) > 0.05) {
+                _phSlope = 3.0 / vDiff;
+                _preferences.putFloat("ph_slope", _phSlope);
+            }
+            Serial.printf("pH Cal 10: Slope updated to %.2f\n", _phSlope);
         } else if (command == "cal,clear") {
-            _phOffset = 0.0;
-            _preferences.putFloat("ph_offset", _phOffset);
+            _phIntercept = 1.65;
+            _phSlope = -5.7;
+            _preferences.putFloat("ph_intercept", _phIntercept);
+            _preferences.putFloat("ph_slope", _phSlope);
+            Serial.println("pH values cleared to defaults.");
         }
-        Serial.printf("Updated pH offset: %.2f\\n", _phOffset);
     } else if (sensor == "ec") {
-        if (command == "cal,custom") {
-            // Example EC calibration if needed
+        if (command == "cal,dry" || command == "cal,0") {
+            // Dry Calibration (Zero point)
+            _ecIntercept = _lastEcVoltage;
+            _preferences.putFloat("ec_intercept", _ecIntercept);
+            Serial.printf("EC Cal Dry: Intercept updated to %.2fV\n", _ecIntercept);
+        } else if (command.startsWith("cal,1.41")) {
+            // Slope Calibration at 1.41 mS/cm
+            float vDiff = _lastEcVoltage - _ecIntercept;
+            if (vDiff > 0.05) {
+                _ecSlope = 1.41 / vDiff;
+                _preferences.putFloat("ec_slope", _ecSlope);
+            }
+            Serial.printf("EC Cal 1.41: Slope updated to %.2f\n", _ecSlope);
         } else if (command == "cal,clear") {
-            _ecOffset = 0.0;
-            _preferences.putFloat("ec_offset", _ecOffset);
+            _ecIntercept = 0.0;
+            _ecSlope = 1.5;
+            _preferences.putFloat("ec_intercept", _ecIntercept);
+            _preferences.putFloat("ec_slope", _ecSlope);
+            Serial.println("EC values cleared to defaults.");
         }
-        Serial.printf("Updated EC offset: %.2f\\n", _ecOffset);
     }
 }

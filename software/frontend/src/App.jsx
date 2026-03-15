@@ -12,7 +12,7 @@ import { useWebSocket } from './hooks/useWebSocket';
 import { useLanguage } from './contexts/LanguageContext';
 
 function App() {
-    const { t, lang } = useLanguage();
+    const { t, lang, toggleLanguage } = useLanguage();
     // Top-level routing state
     const [viewMode, setViewMode] = useState('main-menu'); // 'main-menu' | 'consumer' | 'technical' | 'hardware-guide'
     const [selectedPlant, setSelectedPlant] = useState(null);
@@ -22,9 +22,9 @@ function App() {
     const { data: systemData, isConnected } = useWebSocket();
 
     const tabs = [
-        { id: 'dashboard', label: 'Tech Dashboard', icon: Home },
-        { id: 'automation', label: 'Automation rules', icon: Activity },
-        { id: 'config', label: 'Parameter config', icon: Settings }
+        { id: 'dashboard', label: t('tabDashboard'), icon: Home },
+        { id: 'automation', label: t('tabAutomation'), icon: Activity },
+        { id: 'config', label: t('tabConfig'), icon: Settings }
     ];
 
     // -- MAIN MENU VIEW --
@@ -86,12 +86,12 @@ function App() {
                     <div className="mx-auto px-4">
                         <div className="flex items-center justify-between h-16 w-full">
                             <div className="flex items-center gap-4">
-                                <h1 className="text-xl font-bold text-gray-900">HydroMonitor Admin</h1>
+                                <h1 className="text-xl font-bold text-gray-900">{t('adminTitle')}</h1>
                                 <button
                                     onClick={() => { setViewMode('consumer'); setSelectedPlant(null); }}
                                     className="text-xs font-semibold px-2 py-1 bg-emerald-100 text-emerald-700 rounded-md hover:bg-emerald-200"
                                 >
-                                    <span className="transform rtl:-scale-x-100 inline-block">&larr;</span> {lang === 'en' ? 'Back to Visualizer' : 'العودة للمراقب المرئي'}
+                                    <span className="transform rtl:-scale-x-100 inline-block">&larr;</span> {t('backToVisualizer')}
                                 </button>
                             </div>
                             <div className="flex gap-2">

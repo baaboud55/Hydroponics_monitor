@@ -51,9 +51,14 @@ private:
     float _ph;
     float _ec;
     
-    // Calibration offsets
-    float _phOffset;
-    float _ecOffset;
+    // Calibration parameters
+    float _phIntercept; // Voltage at pH 7.0
+    float _phSlope;     // pH per Volt
+    float _lastPhVoltage;
+
+    float _ecIntercept; // Voltage in dry air
+    float _ecSlope;     // mS/cm per Volt
+    float _lastEcVoltage;
     
     unsigned long _lastDhtRead;
     unsigned long _lastDs18b20Read;

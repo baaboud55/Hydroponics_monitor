@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Power, Droplets, Zap, PlayCircle, CheckCircle, XCircle } from 'lucide-react';
 import { api } from '../services/api';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function ControlPanel({ systemData }) {
+    const { t } = useLanguage();
     // Initialise state from WS data so it survives reconnects/refreshes
     const [solenoids, setSolenoids] = useState(systemData?.solenoids ?? Array(8).fill(false));
     const [pumps, setPumps] = useState(systemData?.circulation_pumps ?? Array(6).fill(false));
@@ -10,10 +12,10 @@ export default function ControlPanel({ systemData }) {
 
     // Dosing pump UI state (speed + name, not tracked on backend for now)
     const [dosingPumps, setDosingPumps] = useState([
-        { name: 'Pump A', speed: 0, active: false },
-        { name: 'Pump B', speed: 0, active: false },
-        { name: 'pH Up/Down', speed: 0, active: false },
-        { name: 'Aux', speed: 0, active: false },
+        { name: t('pumpA'), speed: 0, active: false },
+        { name: t('pumpB'), speed: 0, active: false },
+        { name: t('phUpDown'), speed: 0, active: false },
+        { name: t('auxPump'), speed: 0, active: false },
     ]);
 
     const [feedback, setFeedback] = useState(null); // { text, ok }
@@ -113,7 +115,7 @@ export default function ControlPanel({ systemData }) {
             <section className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                 <h2 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
                     <Droplets className="w-5 h-5 text-blue-600" />
-                    Solenoid Valves
+                    {t('solenoidValves')}
                 </h2>
                 <div className="grid grid-cols-4 gap-3">
                     {solenoids.map((active, index) => (
@@ -135,7 +137,7 @@ export default function ControlPanel({ systemData }) {
             <section className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                 <h2 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
                     <Power className="w-5 h-5 text-green-600" />
-                    Circulation Pumps
+                    {t('circulationPumps')}
                 </h2>
                 <div className="grid grid-cols-3 gap-3 mb-3">
                     {pumps.map((active, index) => (
@@ -159,7 +161,7 @@ export default function ControlPanel({ systemData }) {
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                         }`}
                 >
-                    Main Pump {mainPump && '●'}
+                    {t('mainPump')} {mainPump && '●'}
                 </button>
             </section>
 
@@ -167,7 +169,7 @@ export default function ControlPanel({ systemData }) {
             <section className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                 <h2 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
                     <Zap className="w-5 h-5 text-purple-600" />
-                    Dosing Pumps
+                    {t('dosingPumps')}
                 </h2>
                 <div className="space-y-4">
                     {dosingPumps.map((pump, index) => (
@@ -192,7 +194,7 @@ export default function ControlPanel({ systemData }) {
                                 className="mt-2 w-full py-2 bg-purple-600 text-white rounded-lg font-medium text-sm hover:bg-purple-700 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
                                 <PlayCircle className="w-4 h-4" />
-                                Dose 5s
+                                {t('dose5s')}
                             </button>
                         </div>
                     ))}

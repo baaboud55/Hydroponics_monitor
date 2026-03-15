@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Activity, Droplet, Zap, Clock, AlertTriangle } from 'lucide-react';
 import { api } from '../services/api';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function AutomationStatus({ systemData }) {
+    const { t } = useLanguage();
     const [history, setHistory] = useState([]);
 
     // Derive automation state from WS data prop
@@ -61,7 +63,7 @@ export default function AutomationStatus({ systemData }) {
                     <h4 className="text-sm font-semibold text-gray-700">{label}</h4>
                     <span className={`text-xs px-2 py-1 rounded-full ${state.enabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
                         }`}>
-                        {state.enabled ? 'Active' : 'Inactive'}
+                        {state.enabled ? t('active') : t('inactive')}
                     </span>
                 </div>
                 <div className="flex items-baseline gap-2 mb-2">
@@ -76,8 +78,8 @@ export default function AutomationStatus({ systemData }) {
                         style={{ width: `${percentage}%` }}
                     />
                 </div>
-                <div className="mt-1 text-xs text-gray-500">
-                    Error: ±{error.toFixed(2)} {unit}
+                <div className="mt-1 text-xs text-gray-500 text-start">
+                    {t('errorMargin')}: ±{error.toFixed(2)} {unit}
                 </div>
             </div>
         );
@@ -89,24 +91,24 @@ export default function AutomationStatus({ systemData }) {
     };
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-4 text-start mt-8">
             {/* Status Overview */}
             <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-6 text-white shadow-lg">
                 <div className="flex items-center gap-3 mb-4">
                     <Activity className="w-6 h-6" />
-                    <h2 className="text-xl font-bold">Automation Status</h2>
+                    <h2 className="text-xl font-bold">{t('automationStatusTitle')}</h2>
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                        <p className="opacity-80">Active Parameters</p>
+                        <p className="opacity-80">{t('activeParams')}</p>
                         <p className="text-2xl font-bold">
                             {(automationState.ph.enabled ? 1 : 0) + (automationState.ec.enabled ? 1 : 0)}/2
                         </p>
                     </div>
                     <div>
-                        <p className="opacity-80">Last Dose</p>
+                        <p className="opacity-80">{t('lastDose')}</p>
                         <p className="text-lg font-semibold">
-                            {lastDose ? `${lastDose.type.toUpperCase()} ${lastDose.amount_ml?.toFixed(1)}ml` : 'None'}
+                            {lastDose ? `${lastDose.type.toUpperCase()} ${lastDose.amount_ml?.toFixed(1)}ml` : t('none')}
                         </p>
                     </div>
                 </div>
@@ -114,19 +116,19 @@ export default function AutomationStatus({ systemData }) {
 
             {/* Error Gauges */}
             <div className="grid grid-cols-2 gap-3">
-                <ErrorGauge parameter="ph" label="pH Level" unit="pH" />
-                <ErrorGauge parameter="ec" label="EC (Nutrients)" unit="mS/cm" />
+                <ErrorGauge parameter="ph" label={t('phLevel')} unit="pH" />
+                <ErrorGauge parameter="ec" label={t('plantFoodNutrients')} unit="mS/cm" />
             </div>
 
             {/* Dosing History */}
             <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
                 <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                     <Clock className="w-4 h-4" />
-                    Recent Dosing History
+                    {t('recentHistory')}
                 </h3>
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                     {history.length === 0 ? (
-                        <p className="text-sm text-gray-500 text-center py-4">No dosing history yet</p>
+                        <p className="text-sm text-gray-500 text-center py-4">{t('noHistory')}</p>
                     ) : (
                         history.map((entry, idx) => (
                             <div key={idx} className="flex items-start justify-between p-3 bg-gray-50 rounded-lg text-sm">
@@ -138,7 +140,7 @@ export default function AutomationStatus({ systemData }) {
                                     )}
                                     <div>
                                         <p className="font-medium text-gray-900">
-                                            {entry.parameter.toUpperCase()} Dose
+                                            {entry.parameter.toUpperCase()} {t('dose')}
                                         </p>
                                         <p className="text-xs text-gray-600">
                                             {entry.amount_ml.toFixed(1)}ml •
@@ -161,10 +163,9 @@ export default function AutomationStatus({ systemData }) {
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
                     <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
                     <div className="text-sm">
-                        <p className="font-semibold text-yellow-900">Automation Active</p>
+                        <p className="font-semibold text-yellow-900">{t('safetyNotice')}</p>
                         <p className="text-yellow-800 mt-1">
-                            The system is automatically dosing to maintain target parameters.
-                            Safety limits are enforced.
+                            {t('safetyDesc')}
                         </p>
                     </div>
                 </div>

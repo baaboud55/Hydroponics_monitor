@@ -1,85 +1,102 @@
 import React, { useState, useEffect } from 'react';
 import { Activity, ArrowLeft, Droplets, Zap, Wind, CheckCircle2 } from 'lucide-react';
 import { api } from '../services/api';
-
-const SENSOR_CONFIGS = {
-    ph: {
-        id: 'ph',
-        label: 'pH Probe',
-        icon: Droplets,
-        color: 'text-fuchsia-400',
-        bgColor: 'bg-fuchsia-500/10',
-        borderColor: 'border-fuchsia-500/20',
-        shadowColor: 'hover:shadow-fuchsia-500/10',
-        steps: [
-            {
-                title: 'Clear Calibration',
-                description: 'Reset existing pH calibration data from memory.',
-                command: 'cal,clear',
-                actionLabel: 'Clear Data'
-            },
-            {
-                title: 'Midpoint Calibration (pH 7.0)',
-                description: 'Rinse the probe and place it in a pH 7.0 buffer solution. Wait for the reading to stabilize.',
-                command: 'cal,7,', // The firmware will append the reading, or we send it. Actually, wait.
-                // Our firmware scaffold expects 'cal,7,<value>' or similar? Wait, the firmware expected `command.startsWith("cal,7,")`.
-                // For a UI to just ask firmware to calibrate at 7 based on its current raw reading, we could just send 'cal,7'.
-                // Oh I scaffolded it to expect `command.substring(6).toFloat()`. This implies the frontend needs to append the reading.
-                // If it's a pass-through command, the frontend appends the reading.
-                actionLabel: 'Calibrate pH 7.0',
-                appendReading: true
-            }
-        ]
-    },
-    ec: {
-        id: 'ec',
-        label: 'EC Probe',
-        icon: Zap,
-        color: 'text-amber-400',
-        bgColor: 'bg-amber-500/10',
-        borderColor: 'border-amber-500/20',
-        shadowColor: 'hover:shadow-amber-500/10',
-        steps: [
-            {
-                title: 'Clear Calibration',
-                description: 'Reset existing EC calibration data from memory.',
-                command: 'cal,clear',
-                actionLabel: 'Clear Data'
-            }
-        ]
-    },
-    do: {
-        id: 'do',
-        label: 'Dissolved Oxygen',
-        icon: Wind,
-        color: 'text-sky-400',
-        bgColor: 'bg-sky-500/10',
-        borderColor: 'border-sky-500/20',
-        shadowColor: 'hover:shadow-sky-500/10',
-        steps: [
-            {
-                title: 'Clear Calibration',
-                description: 'Clears all DO calibration data.',
-                command: 'Cal,clear',
-                actionLabel: 'Clear Data'
-            },
-            {
-                title: 'Atmospheric Calibration',
-                description: 'Pull the probe out of the water, dry it off, and let it sit in the air for 1 minute before proceeding.',
-                command: 'Cal,atm',
-                actionLabel: 'Calibrate in Air'
-            },
-            {
-                title: 'Zero Calibration',
-                description: 'Place the probe in 0 Dissolved Oxygen calibration solution. Wait for the reading to stabilize near 0.',
-                command: 'Cal,0',
-                actionLabel: 'Calibrate to Zero'
-            }
-        ]
-    }
-};
+import { useLanguage } from '../contexts/LanguageContext';
 
 export default function CalibrationWizard({ onBack, systemData }) {
+    const { t } = useLanguage();
+    
+    // Moved inside component to have access to t() for translations
+    const SENSOR_CONFIGS = {
+        ph: {
+            id: 'ph',
+            label: t('phProbe') || 'pH',
+            icon: Droplets,
+            color: 'text-fuchsia-400',
+            bgColor: 'bg-fuchsia-500/10',
+            borderColor: 'border-fuchsia-500/20',
+            shadowColor: 'hover:shadow-fuchsia-500/10',
+            steps: [
+                {
+                    title: t('clearCalibration') || 'Clear Calibration',
+                    description: t('resetPh') || 'Reset existing pH calibration data from memory.',
+                    command: 'cal,clear',
+                    actionLabel: t('clearData') || 'Clear Data'
+                },
+                {
+                    title: t('midCalibration') || 'Midpoint Calibration (pH 7.0)',
+                    description: t('rinsePh') || 'Rinse the probe and place it in a pH 7.0 buffer solution. Wait for the reading to stabilize.',
+                    command: 'cal,7', 
+                    actionLabel: t('calPh7') || 'Calibrate pH 7.0'
+                },
+                {
+                    title: t('slopeCalibration') || 'Slope Calibration (pH 4.0)',
+                    description: t('rinsePh4') || 'Rinse the probe and place it in a pH 4.0 buffer solution. Wait for the reading to stabilize.',
+                    command: 'cal,4', 
+                    actionLabel: t('calPh4') || 'Calibrate pH 4.0'
+                }
+            ]
+        },
+        ec: {
+            id: 'ec',
+            label: t('ecProbe') || 'EC',
+            icon: Zap,
+            color: 'text-amber-400',
+            bgColor: 'bg-amber-500/10',
+            borderColor: 'border-amber-500/20',
+            shadowColor: 'hover:shadow-amber-500/10',
+            steps: [
+                {
+                    title: t('clearCalibration') || 'Clear Calibration',
+                    description: t('resetEc') || 'Reset existing EC calibration data from memory.',
+                    command: 'cal,clear',
+                    actionLabel: t('clearData') || 'Clear Data'
+                },
+                {
+                    title: t('dryCalibration') || 'Dry Calibration (0 mS/cm)',
+                    description: t('dryEc') || 'Wipe the EC probe dry and hold it in the air. Wait for the reading to stabilize.',
+                    command: 'cal,dry', 
+                    actionLabel: t('calEcDry') || 'Calibrate 0 mS/cm'
+                },
+                {
+                    title: t('bufferCalibration') || 'Buffer Calibration (1.41 mS/cm)',
+                    description: t('bufferEc') || 'Place the EC probe in a 1.41 mS/cm calibration solution. Wait for the reading to stabilize.',
+                    command: 'cal,1.41', 
+                    actionLabel: t('calEcBuffer') || 'Calibrate 1.41 mS/cm'
+                }
+            ]
+        },
+        do: {
+            id: 'do',
+            label: t('dissolvedOxygen'),
+            icon: Wind,
+            color: 'text-sky-400',
+            bgColor: 'bg-sky-500/10',
+            borderColor: 'border-sky-500/20',
+            shadowColor: 'hover:shadow-sky-500/10',
+            steps: [
+                {
+                    title: t('clearCalibration'),
+                    description: t('resetDo'),
+                    command: 'Cal,clear',
+                    actionLabel: t('clearData')
+                },
+                {
+                    title: t('atmCalibration'),
+                    description: t('pullProbe'),
+                    command: 'Cal,atm',
+                    actionLabel: t('calInAir')
+                },
+                {
+                    title: t('zeroCalibration'),
+                    description: t('placeProbeZero'),
+                    command: 'Cal,0',
+                    actionLabel: t('calToZero')
+                }
+            ]
+        }
+    };
+
     const [selectedSensor, setSelectedSensor] = useState(null);
     const [activeStep, setActiveStep] = useState(0);
     const [isSending, setIsSending] = useState(false);
@@ -100,11 +117,6 @@ export default function CalibrationWizard({ onBack, systemData }) {
 
         try {
             let cmdStr = step.command;
-            if (step.appendReading) {
-                // If the firmware needs to know the exact reading at this moment
-                const currentVal = systemData?.[selectedSensor.id] || 0;
-                cmdStr += currentVal.toFixed(2);
-            }
 
             await api.sendCalibration(selectedSensor.id, cmdStr);
             setStatusMessage(`Success! Command sent: ${cmdStr}`);
@@ -128,8 +140,8 @@ export default function CalibrationWizard({ onBack, systemData }) {
     };
 
     const renderSelectionMenu = () => (
-        <div className="w-full max-w-4xl mx-auto mt-12 fade-up">
-            <h2 className="text-3xl font-bold text-white mb-8 text-center">Which sensor are we calibrating?</h2>
+        <div className="w-full max-w-4xl mx-auto mt-12 fade-up rtl:text-right">
+            <h2 className="text-3xl font-bold text-white mb-8 text-center">{t('whichSensor')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {Object.values(SENSOR_CONFIGS).map((config, idx) => (
                     <button
@@ -155,25 +167,25 @@ export default function CalibrationWizard({ onBack, systemData }) {
         const currentData = systemData?.[selectedSensor.id];
 
         return (
-            <div className="w-full max-w-2xl mx-auto mt-8 fade-up relative">
+            <div className="w-full max-w-2xl mx-auto mt-8 fade-up relative rtl:text-right">
                 <button onClick={() => setSelectedSensor(null)} className="text-slate-400 hover:text-white mb-6 flex items-center gap-2 text-sm font-medium transition cursor-pointer">
-                    <ArrowLeft className="w-4 h-4" /> Choose different sensor
+                    <ArrowLeft className="w-4 h-4 rtl:rotate-180" /> {t('chooseDiffSensor')}
                 </button>
 
                 <div className="bg-slate-900 border border-slate-700 rounded-3xl p-8 relative overflow-hidden">
                     {/* Live Reading Panel */}
-                    <div className="absolute top-6 right-6 px-4 py-2 bg-slate-800 rounded-xl border border-slate-700 flex flex-col items-end">
-                        <span className="text-xs text-slate-400 font-medium">Live Reading</span>
+                    <div className="absolute top-6 end-6 px-4 py-2 bg-slate-800 rounded-xl border border-slate-700 flex flex-col items-end rtl:items-start">
+                        <span className="text-xs text-slate-400 font-medium">{t('liveReading')}</span>
                         <div className={`text-2xl font-bold font-mono ${selectedSensor.color}`}>
                             {currentData !== undefined ? currentData.toFixed(2) : '--'}
                         </div>
                     </div>
 
-                    <div className="mb-8 pr-32">
+                    <div className="mb-8 pe-32 text-start">
                         <div className={`w-12 h-12 rounded-xl ${selectedSensor.bgColor} ${selectedSensor.color} flex items-center justify-center mb-4`}>
                             <selectedSensor.icon className="w-6 h-6" />
                         </div>
-                        <h2 className="text-3xl font-bold text-white mb-2">{selectedSensor.label} Calibration</h2>
+                        <h2 className="text-3xl font-bold text-white mb-2">{selectedSensor.label} {t('calibration')}</h2>
                         <div className="flex gap-2">
                             {selectedSensor.steps.map((_, idx) => (
                                 <div key={idx} className={`h-1.5 flex-1 rounded-full bg-slate-800 ${idx <= activeStep ? selectedSensor.bgColor : ''}`}>
@@ -186,9 +198,9 @@ export default function CalibrationWizard({ onBack, systemData }) {
                     </div>
 
                     {activeStep < selectedSensor.steps.length ? (
-                        <div className="space-y-6">
+                        <div className="space-y-6 text-start">
                             <div>
-                                <h3 className="text-xl font-bold text-white mb-2">Step {activeStep + 1}: {selectedSensor.steps[activeStep].title}</h3>
+                                <h3 className="text-xl font-bold text-white mb-2">{t('step')} {activeStep + 1}: {selectedSensor.steps[activeStep].title}</h3>
                                 <p className="text-slate-400 leading-relaxed text-lg">
                                     {selectedSensor.steps[activeStep].description}
                                 </p>
@@ -202,7 +214,7 @@ export default function CalibrationWizard({ onBack, systemData }) {
                                         ${isSending ? 'opacity-50 cursor-not-allowed bg-slate-800 border-slate-700 text-slate-300'
                                             : `bg-slate-800 border-slate-700 hover:${selectedSensor.bgColor} hover:border-transparent`}`}
                                 >
-                                    {isSending ? 'Processing...' : selectedSensor.steps[activeStep].actionLabel}
+                                    {isSending ? t('processing') : selectedSensor.steps[activeStep].actionLabel}
                                 </button>
 
                                 {statusMessage && (
@@ -218,13 +230,13 @@ export default function CalibrationWizard({ onBack, systemData }) {
                             <div className="w-20 h-20 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto mb-6">
                                 <CheckCircle2 className="w-10 h-10" />
                             </div>
-                            <h3 className="text-2xl font-bold text-white mb-2">Calibration Complete!</h3>
-                            <p className="text-slate-400 mb-8">Your {selectedSensor.label} is now properly calibrated.</p>
+                            <h3 className="text-2xl font-bold text-white mb-2">{t('calComplete')}</h3>
+                            <p className="text-slate-400 mb-8">{selectedSensor.label} {t('calNowCalibrated')}</p>
                             <button
                                 onClick={() => setSelectedSensor(null)}
                                 className="px-6 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition"
                             >
-                                Done
+                                {t('doneBtn')}
                             </button>
                         </div>
                     )}
@@ -240,19 +252,19 @@ export default function CalibrationWizard({ onBack, systemData }) {
             <header className="p-8 flex justify-between items-center relative z-10 fade-up">
                 <button
                     onClick={onBack}
-                    className="p-2 px-4 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 transition flex items-center gap-2 text-sm font-medium"
+                    className="p-2 px-4 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 transition flex items-center gap-2 text-sm font-medium cursor-pointer"
                 >
-                    <ArrowLeft className="w-4 h-4" /> Back to Hub
+                    <ArrowLeft className="w-4 h-4 rtl:rotate-180" /> {t('backToHub')}
                 </button>
             </header>
 
             <main className="flex-1 flex flex-col items-center px-4 sm:px-6 z-10 w-full">
                 <div className="text-center mb-8 max-w-3xl fade-up">
                     <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-white">
-                        Calibration Wizard
+                        {t('calWizardTitle')}
                     </h1>
                     <p className="text-lg text-slate-400">
-                        Follow the steps to ensure your sensors take highly accurate measurements.
+                        {t('calWizardDesc')}
                     </p>
                 </div>
 
