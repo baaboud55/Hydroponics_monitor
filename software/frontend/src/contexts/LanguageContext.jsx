@@ -13,7 +13,28 @@ const translations = {
         launchApp: "⚡ Launch the App",
         viewGithub: "View on GitHub ↗",
 
-        // MainMenu
+        // Bento Marketing
+        bentoHeroTitle1: "Smart Growing.",
+        bentoHeroTitle2: "Zero Effort.",
+        bentoHeroSub: "HydroMonitor takes the guesswork out of growing. It constantly watches your water, temperature, and plant food — then automatically adds exactly what your plants need.",
+        bentoScrollPrompt: "SCROLL TO EXPLORE ↓",
+        
+        bentoSensorBadge: "Precision Sensors",
+        bentoSensorTitle: "24/7 Quality Checks",
+        bentoSensorSub: "Industrial-grade pH and EC probes monitor your reservoir water round the clock.",
+        
+        bentoPumpBadge: "Autonomous Dosing",
+        bentoPumpTitle: "Perfect Nutrients",
+        bentoPumpSub: "Micro-dosing pumps automatically adjust pH and plant food levels with surgical precision.",
+        
+        bentoHubBadge: "Smart Hub",
+        bentoHubTitle: "The Brains",
+        bentoHubSub: "Wi-Fi enabled control center keeps you connected to your plants from anywhere.",
+        
+        bentoActionTitle: "Take Control.",
+        bentoActionSub: "Experience the easiest way to grow healthy plants at home.",
+
+        // MainMenu (Legacy Cards)
         welcomeTitle: "Grow plants easily,",
         welcomeTitleAccent: "automatically.",
         welcomeSub: "The smart system that constantly cares for your plants, balancing water, temperature, and food so you don't have to.",
@@ -190,7 +211,28 @@ const translations = {
         launchApp: "⚡ بدء التطبيق",
         viewGithub: "عرض على GitHub ↖",
 
-        // MainMenu
+        // Bento Marketing
+        bentoHeroTitle1: "زراعة ذكية.",
+        bentoHeroTitle2: "بدون مجهود.",
+        bentoHeroSub: "نظام هايدرومونيتور يزيل التخمين من الزراعة. يراقب باستمرار مستويات المياه والحرارة وغذاء النبات — ثم يضيف تلقائياً ما تحتاجه نباتاتك بالضبط لتحى بصحة ممتازة.",
+        bentoScrollPrompt: "قم بالتمرير للاكتشاف ↓",
+        
+        bentoSensorBadge: "مستشعرات دقيقة",
+        bentoSensorTitle: "فحوصات مستمرة",
+        bentoSensorSub: "مجسات صناعية لحموضة وغذاء المياه تراقب خزانك على مدار الساعة.",
+        
+        bentoPumpBadge: "ضخ تلقائي",
+        bentoPumpTitle: "تغذية مثالية",
+        bentoPumpSub: "مضخات دقيقة تعدل مستويات الحموضة وغذاء النبات بدقة جراحية.",
+        
+        bentoHubBadge: "المركز الذكي",
+        bentoHubTitle: "العقل المدبر",
+        bentoHubSub: "مركز تحكم متصل بشبكة Wi-Fi يبقيك على اتصال بنباتاتك من أي مكان.",
+        
+        bentoActionTitle: "تولَّ القيادة.",
+        bentoActionSub: "جرب أسهل طريقة لزراعة نباتات صحية في منزلك.",
+
+        // MainMenu (Legacy Cards)
         welcomeTitle: "ازرع نباتاتك بسهولة،",
         welcomeTitleAccent: "وتلقائياً.",
         welcomeSub: "النظام الذكي الذي يرعى نباتاتك باستمرار، ويوازن مستويات الماء والحرارة والغذاء لتستريح بالكامل.",
