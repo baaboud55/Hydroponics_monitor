@@ -4,11 +4,9 @@ import { Sprout, ArrowRight, Settings, Droplets, Droplet, Leaf, Activity } from 
 import { useLanguage } from '../contexts/LanguageContext';
 
 // Product image mapped from public folder
-const homieImg = '/homie-system.png';
+const homieImg = `${import.meta.env.BASE_URL}homie-system.png`;
 // Lifestyle image mapped from artifacts via public folder link or local path.
-// For now, we will place a placeholder that the user can swap, 
-// just like we did with homieImg, to avoid absolute path issues in Vite.
-const lifestyleImg = '/lifestyle_kitchen_hydroponics.png'; 
+const lifestyleImg = `${import.meta.env.BASE_URL}lifestyle_kitchen_hydroponics.png`; 
 
 function MinimalistButton({ children, onClick, primary }) {
     return (
