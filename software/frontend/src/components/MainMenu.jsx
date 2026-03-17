@@ -3,10 +3,9 @@ import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import { Sprout, ArrowRight, Settings, Droplets, Droplet, Leaf, Activity } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
-// Product image mapped from public folder
-const homieImg = `${import.meta.env.BASE_URL}homie-system.png`;
-// Lifestyle image mapped from artifacts via public folder link or local path.
-const lifestyleImg = `${import.meta.env.BASE_URL}lifestyle_kitchen_hydroponics.png`; 
+// Import images directly so Vite automatically handles hashing and GitHub Pages base paths
+import homieImg from '../assets/homie-system.png';
+import lifestyleImg from '../assets/lifestyle-kitchen.png';
 
 function MinimalistButton({ children, onClick, primary }) {
     return (
@@ -100,15 +99,8 @@ export default function MainMenu({ onNavigate }) {
                         <img 
                             src={homieImg} 
                             alt="HydroMonitor A-Frame System" 
-                            className="w-full object-contain"
-                            // If the user hasn't copied the image yet, don't break the layout
-                            onError={(e) => { e.target.style.opacity = 0; e.target.nextSibling.style.display = 'flex'; }}
+                            className="w-full object-contain drop-shadow-2xl"
                         />
-                        {/* Fallback box */}
-                        <div className="absolute inset-0 hidden flex-col items-center justify-center text-slate-400 bg-white shadow-xl rounded-3xl border border-slate-100">
-                             <Sprout className="w-16 h-16 animate-pulse mb-4 text-[#87A96B]" />
-                             <p className="text-sm font-medium">Place image at: public/homie-system.png</p>
-                        </div>
                     </motion.div>
 
                     {/* --- LAYER 1: HERO TEXT --- */}
@@ -177,12 +169,7 @@ export default function MainMenu({ onNavigate }) {
                             src={lifestyleImg} 
                             alt="Farm to kitchen lifestyle" 
                             className="absolute inset-0 w-full h-full object-cover"
-                            onError={(e) => { e.target.style.opacity = 0; e.target.nextSibling.style.display = 'flex'; }}
                         />
-                         <div className="hidden flex-col items-center justify-center text-[#999] p-8 text-center bg-white/80 backdrop-blur-md m-8 rounded-3xl">
-                             <p className="font-semibold mb-2">Lifestyle Image Missing</p>
-                             <p className="text-sm">Please place the generated 'lifestyle_kitchen_hydroponics.png' in the public folder to see the Farm-to-Kitchen design.</p>
-                        </div>
                     </motion.div>
 
                     <motion.div 
