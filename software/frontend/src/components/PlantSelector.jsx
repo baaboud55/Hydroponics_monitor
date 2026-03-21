@@ -1,5 +1,5 @@
 import React from 'react';
-import { Leaf, Droplets, ThermometerSun, ArrowRight } from 'lucide-react';
+import { Leaf, Droplets, ThermometerSun, ArrowRight, ArrowLeft, Cpu } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const PLANT_TYPES = [
@@ -45,7 +45,7 @@ const PLANT_TYPES = [
     }
 ];
 
-export default function PlantSelector({ onSelectPlant }) {
+export default function PlantSelector({ onSelectPlant, onBackToMenu, onTechView }) {
     const { t } = useLanguage();
 
     const translatedPlants = PLANT_TYPES.map(p => ({
@@ -55,9 +55,28 @@ export default function PlantSelector({ onSelectPlant }) {
     }));
 
     return (
-        <div className="min-h-screen bg-slate-900 text-slate-100 py-12 px-4 sm:px-6 lg:px-8 flex flex-col items-center relative overflow-hidden">
+        <div className="min-h-screen bg-slate-900 text-slate-100 py-6 sm:py-12 px-4 sm:px-6 lg:px-8 flex flex-col items-center relative overflow-hidden">
             {/* Background Glow */}
             <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-emerald-500/20 rounded-full blur-[120px] pointer-events-none"></div>
+
+            {/* Navigation Header */}
+            <div className="w-full max-w-7xl flex items-center justify-between relative z-20 mb-8 sm:mb-12">
+                <button
+                    onClick={onBackToMenu}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-700 transition border border-slate-700/50 backdrop-blur-md shadow-lg"
+                >
+                    <ArrowLeft className="w-4 h-4 transform rtl:-scale-x-100" />
+                    <span className="text-sm font-medium">{t('backToMenu')}</span>
+                </button>
+                
+                <button
+                    onClick={onTechView}
+                    className="p-2.5 rounded-xl bg-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-700 transition border border-slate-700/50 backdrop-blur-md shadow-lg"
+                    title="Developer / Technical View"
+                >
+                    <Cpu className="w-5 h-5 pointer-events-none" />
+                </button>
+            </div>
 
             <div className="text-center mb-16 relative z-10 w-full max-w-4xl fade-up">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-sm font-medium mb-6">

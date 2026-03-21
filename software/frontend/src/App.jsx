@@ -46,26 +46,13 @@ function App() {
     // -- CONSUMER VIEW (The "WOW" Experience) --
     else if (viewMode === 'consumer' || viewMode === 'visualizer') {
         content = (
-            <div className="relative">
-                {/* Back to Hub Navigation */}
-                <button
-                    onClick={() => { setViewMode('main-menu'); setSelectedPlant(null); }}
-                    className="absolute top-4 start-4 z-50 p-2 px-4 rounded-lg bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700 transition flex items-center gap-2 text-sm font-medium border border-slate-700/50 backdrop-blur-md"
-                >
-                    <span className="transform rtl:-scale-x-100 inline-block">&larr;</span> {t('backToMenu')}
-                </button>
-
-                {/* Hidden Advanced Toggle */}
-                <button
-                    onClick={() => setViewMode('technical')}
-                    className="absolute top-4 end-4 z-50 p-2 rounded-lg bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700 transition border border-slate-700/50 backdrop-blur-md"
-                    title="Developer / Technical View"
-                >
-                    <Cpu className="w-5 h-5" />
-                </button>
-
+            <div className="relative min-h-screen bg-slate-950">
                 {!selectedPlant ? (
-                    <PlantSelector onSelectPlant={setSelectedPlant} />
+                    <PlantSelector 
+                        onSelectPlant={setSelectedPlant} 
+                        onBackToMenu={() => setViewMode('main-menu')}
+                        onTechView={() => setViewMode('technical')}
+                    />
                 ) : (
                     <SystemVisualizer
                         plant={selectedPlant}
@@ -133,10 +120,10 @@ function App() {
 
     return (
         <>
-            {/* Global Language Toggle (Top End) */}
+            {/* Global Language Toggle (Bottom End to avoid header collisions) */}
             <button
                 onClick={toggleLanguage}
-                className="fixed top-4 end-4 z-[100] flex items-center gap-2 px-4 py-1.5 rounded-full border border-slate-700 bg-slate-900/80 hover:bg-slate-800 text-sm font-medium text-slate-300 transition-colors shadow-lg backdrop-blur-md"
+                className="fixed bottom-6 end-6 z-[100] flex items-center gap-2 px-4 py-2 rounded-full border border-slate-700 bg-slate-900/90 hover:bg-slate-800 text-sm font-medium text-slate-300 transition-colors shadow-2xl backdrop-blur-md"
                 title="Toggle Language"
             >
                 <Globe className="w-4 h-4" />

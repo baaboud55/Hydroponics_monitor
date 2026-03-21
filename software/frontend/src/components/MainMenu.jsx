@@ -31,9 +31,9 @@ const LeaderLine = ({ d, text, subtext, icon: Icon, progress, side = 'left' }) =
     return (
         <motion.div 
             style={{ opacity: progress }}
-            className={`absolute top-0 bottom-0 pointer-events-none flex flex-col justify-center
-                ${side === 'left' ? 'left-[10%] items-end text-right' : 'right-[10%] items-start text-left'}
-                rtl:${side === 'left' ? 'right-[10%] text-left items-start' : 'left-[10%] text-right items-end'}
+            className={`absolute top-0 bottom-0 pointer-events-none flex flex-col justify-center z-30
+                ${side === 'left' ? 'left-4 md:left-[10%] items-start md:items-end text-left md:text-right' : 'right-4 md:right-[10%] items-end md:items-start text-right md:text-left'}
+                rtl:${side === 'left' ? 'right-4 md:right-[10%] text-right md:text-left items-end md:items-start' : 'left-4 md:left-[10%] text-left md:text-right items-start md:items-end'}
             `}
         >
             <div className="bg-white/80 backdrop-blur-lg p-6 rounded-3xl shadow-xl shadow-black/5 max-w-sm border border-white">
