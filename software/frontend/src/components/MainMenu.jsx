@@ -31,21 +31,19 @@ const LeaderLine = ({ d, text, subtext, icon: Icon, progress, side = 'left' }) =
     return (
         <motion.div 
             style={{ opacity: progress }}
-            className={`absolute top-0 bottom-0 pointer-events-none flex flex-col justify-center z-30
-                ${side === 'left' ? 'left-4 md:left-[10%] items-start md:items-end text-left md:text-right' : 'right-4 md:right-[10%] items-end md:items-start text-right md:text-left'}
-                rtl:${side === 'left' ? 'right-4 md:right-[10%] text-right md:text-left items-end md:items-start' : 'left-4 md:left-[10%] text-left md:text-right items-start md:items-end'}
+            className={`absolute md:top-0 bottom-12 md:bottom-0 pointer-events-none flex flex-col justify-end md:justify-center z-30 w-[90%] md:w-auto max-w-sm px-0 md:px-4 mx-auto inset-x-0 md:mx-0
+                ${side === 'left' ? 'md:left-[10%] md:right-auto md:items-end items-center text-center md:text-right' : 'md:right-[10%] md:left-auto md:items-start items-center text-center md:text-left'}
             `}
         >
-            <div className="bg-white/80 backdrop-blur-lg p-6 rounded-3xl shadow-xl shadow-black/5 max-w-sm border border-white">
-                <div className={`flex items-center gap-3 mb-3 ${side === 'left' ? 'justify-end rtl:justify-start' : 'justify-start rtl:justify-end'}`}>
-                    <Icon className="w-6 h-6 text-[#87A96B]" />
-                    <h3 className="font-serif text-xl font-semibold text-[#333333]">{text}</h3>
+            <div className="bg-white/95 md:bg-white/80 backdrop-blur-xl p-5 md:p-6 rounded-3xl shadow-2xl md:shadow-xl shadow-black/10 border border-white pointer-events-auto">
+                <div className={`flex items-center gap-3 mb-3 justify-center ${side === 'left' ? 'md:justify-end rtl:md:justify-start' : 'md:justify-start rtl:md:justify-end'}`}>
+                    <Icon className="w-6 h-6 text-[#87A96B] shrink-0" />
+                    <h3 className="font-serif text-lg md:text-xl font-semibold text-[#333333]">{text}</h3>
                 </div>
-                <p className="text-[#666666] leading-relaxed text-sm bg-white/50 px-2 py-1 rounded inline-block">
+                <p className="text-[#666666] leading-relaxed text-sm bg-[#F9F9F7] md:bg-white/50 px-3 py-2 rounded-xl inline-block border border-black/5">
                     {subtext}
                 </p>
             </div>
-            {/* Minimalist SVG connecting line logic can go here. For simplicity, the boxed design floating is extremely elegant. */}
         </motion.div>
     );
 };
@@ -94,7 +92,7 @@ export default function MainMenu({ onNavigate }) {
                     {/* Central Product Image */}
                     <motion.div 
                         style={{ scale: imageScale }}
-                        className="relative z-10 w-[80%] max-w-[500px] drop-shadow-2xl"
+                        className="relative z-10 w-[70%] md:w-[80%] max-w-[500px] drop-shadow-2xl -mt-24 md:mt-0"
                     >
                         <img 
                             src={homieImg} 
