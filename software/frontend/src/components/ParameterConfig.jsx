@@ -22,11 +22,11 @@ export default function ParameterConfig({ systemData }) {
     const loadConfig = async () => {
         try {
             const data = await api.getConfig();
-            setConfig({
-                ph: data.ph,
-                ec: data.ec,
-                do: data.do
-            });
+            setConfig(prev => ({
+                ph: { ...prev.ph, ...(data.ph || {}) },
+                ec: { ...prev.ec, ...(data.ec || {}) },
+                do: { ...prev.do, ...(data.do || {}) }
+            }));
         } catch (error) {
             console.error('Failed to load config:', error);
         }
