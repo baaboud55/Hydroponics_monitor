@@ -17,7 +17,7 @@ from config_manager import get_config_manager, SystemConfiguration, ParameterCon
 # --- Configuration ---
 # Set MQTT_ENABLED=true to connect to the real broker (and run mock_device.py).
 # When false, the internal mock sensor simulation is used instead.
-MQTT_ENABLED      = os.getenv("MQTT_ENABLED", "false").lower() == "true"
+MQTT_ENABLED = True
 MQTT_BROKER       = os.getenv("MQTT_BROKER", "test.mosquitto.org")
 MQTT_PORT         = int(os.getenv("MQTT_PORT", "1883"))
 MQTT_TOPIC_STATUS = "hydro/status/#"

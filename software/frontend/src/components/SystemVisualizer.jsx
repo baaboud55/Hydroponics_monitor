@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Settings, ArrowLeft, Droplets, Activity, Thermometer, FlaskConical } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
-export default function SystemVisualizer({ plant, onBack, systemData }) {
+export default function SystemVisualizer({ plant, onBack, onTechView, systemData }) {
     const { t } = useLanguage();
     const [dosing, setDosing] = useState(null);
 
@@ -28,13 +28,22 @@ export default function SystemVisualizer({ plant, onBack, systemData }) {
 
             {/* Header / Nav */}
             <header className="flex items-center justify-between p-6 z-10 border-b border-slate-800/50 bg-slate-900/30 backdrop-blur-md">
-                <button
-                    onClick={onBack}
-                    className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
-                >
-                    <ArrowLeft className="w-5 h-5 transform rtl:-scale-x-100" />
-                    <span className="font-medium">{t('changeCrop')}</span>
-                </button>
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={onBack}
+                        className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-slate-800"
+                    >
+                        <ArrowLeft className="w-5 h-5 transform rtl:-scale-x-100" />
+                        <span className="font-medium hidden sm:inline">{t('changeCrop')}</span>
+                    </button>
+                    <button
+                        onClick={onTechView}
+                        className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-slate-800"
+                    >
+                        <Settings className="w-5 h-5" />
+                        <span className="font-medium hidden sm:inline">Hub / Settings</span>
+                    </button>
+                </div>
 
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-800/80 border border-slate-700">

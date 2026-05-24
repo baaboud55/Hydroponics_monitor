@@ -68,6 +68,9 @@ export default function MainMenu({ onNavigate }) {
     const heroOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
     const heroY = useTransform(scrollYProgress, [0, 0.2], [0, -50]);
 
+    // Product Image theatrical entrance
+    const imageY = useTransform(scrollYProgress, [0, 0.2], [150, 0]);
+
     // Transforms for Layer Highlights
     const opacityReservoir = useTransform(scrollYProgress, [0.15, 0.25, 0.45, 0.55], [0, 1, 1, 0]);
     const opacityPipes = useTransform(scrollYProgress, [0.45, 0.55, 0.75, 0.85], [0, 1, 1, 0]);
@@ -91,8 +94,8 @@ export default function MainMenu({ onNavigate }) {
 
                     {/* Central Product Image */}
                     <motion.div 
-                        style={{ scale: imageScale }}
-                        className="relative z-10 w-[70%] md:w-[80%] max-w-[500px] drop-shadow-2xl -mt-24 md:mt-0"
+                        style={{ scale: imageScale, y: imageY }}
+                        className="relative z-10 w-[70%] md:w-[80%] max-w-[500px] drop-shadow-2xl -mt-6 md:mt-0"
                     >
                         <img 
                             src={homieImg} 
@@ -104,7 +107,7 @@ export default function MainMenu({ onNavigate }) {
                     {/* --- LAYER 1: HERO TEXT --- */}
                     <motion.div 
                         style={{ opacity: heroOpacity, y: heroY }}
-                        className="absolute inset-x-0 top-[15%] md:top-[25%] flex flex-col items-center text-center px-6 z-20 pointer-events-none"
+                        className="absolute inset-x-0 top-[8%] flex flex-col items-center text-center px-6 z-20 pointer-events-none"
                     >
                         <span className="mb-4 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#87A96B]/10 text-[#87A96B] text-sm font-semibold tracking-wide">
                             <Leaf className="w-4 h-4" /> Sustainable Living

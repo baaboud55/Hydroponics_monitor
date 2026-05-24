@@ -1,5 +1,5 @@
 // API Service for Backend Communication
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = `http://${window.location.hostname}:8000`;
 
 export const api = {
     // Get current system state
@@ -101,7 +101,7 @@ export const api = {
 
     // WebSocket connection for real-time updates
     connectWebSocket: (onMessage) => {
-        const ws = new WebSocket(`ws://localhost:8000/ws`);
+        const ws = new WebSocket(`ws://${window.location.hostname}:8000/ws`);
 
         ws.onopen = () => {
             console.log('WebSocket connected');

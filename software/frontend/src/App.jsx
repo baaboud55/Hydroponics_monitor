@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Dashboard from './components/Dashboard';
 import ParameterConfig from './components/ParameterConfig';
 import AutomationStatus from './components/AutomationStatus';
@@ -13,9 +13,38 @@ import { useLanguage } from './contexts/LanguageContext';
 
 function App() {
     const { t, lang, toggleLanguage } = useLanguage();
-    // Top-level routing state
-    const [viewMode, setViewMode] = useState('main-menu'); // 'main-menu' | 'consumer' | 'technical' | 'hardware-guide'
-    const [selectedPlant, setSelectedPlant] = useState(null);
+    const [viewMode, setViewMode] = useState(() => {
+        // Explicit override for testing
+        const params = new URLSearchParams(window.location.search);
+        if (params.has('demo')) return params.get('demo') === 'true' ? 'main-menu' : 'visualizer';
+        
+        // Intelligent Routing:
+        // - GitHub Pages (Public site) -> Marketing Demo
+        // - Localhost / IP (Actual Hardware Appliance) -> App Dashboard
+        const hostname = window.location.hostname;
+        if (hostname.includes('github.io')) {
+            return 'main-menu';
+        }
+        return 'visualizer';
+    }); // 'main-menu' | 'visualizer' | 'technical' | 'hardware-guide' | 'calibration'
+    
+    const [selectedPlant, setSelectedPlant] = useState(() => {
+        try {
+            const saved = localStorage.getItem('hydro_selected_plant');
+            return saved ? JSON.parse(saved) : null;
+        } catch {
+            return null;
+        }
+    });
+
+    // Persist crop selection
+    useEffect(() => {
+        if (selectedPlant) {
+            localStorage.setItem('hydro_selected_plant', JSON.stringify(selectedPlant));
+        } else {
+            localStorage.removeItem('hydro_selected_plant');
+        }
+    }, [selectedPlant]);
     const [activeTab, setActiveTab] = useState('dashboard');
 
     // Single WebSocket connection shared across all components
@@ -57,6 +86,7 @@ function App() {
                     <SystemVisualizer
                         plant={selectedPlant}
                         onBack={() => setSelectedPlant(null)}
+                        onTechView={() => setViewMode('technical')}
                         systemData={systemData}
                     />
                 )}
