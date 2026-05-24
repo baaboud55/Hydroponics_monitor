@@ -11,6 +11,9 @@ const PLANT_TYPES = [
         idealTemp: '18-22°C',
         idealPh: '5.5-6.5',
         idealEc: '0.8-1.2',
+        targetTemp: 20.0,
+        targetPh: 6.0,
+        targetEc: 1.0,
         color: 'from-green-400 to-emerald-600'
     },
     {
@@ -21,6 +24,9 @@ const PLANT_TYPES = [
         idealTemp: '20-27°C',
         idealPh: '5.5-6.5',
         idealEc: '2.0-3.5',
+        targetTemp: 23.5,
+        targetPh: 6.0,
+        targetEc: 2.7,
         color: 'from-red-400 to-rose-600'
     },
     {
@@ -31,6 +37,9 @@ const PLANT_TYPES = [
         idealTemp: '21-27°C',
         idealPh: '5.5-6.5',
         idealEc: '1.0-1.6',
+        targetTemp: 24.0,
+        targetPh: 6.0,
+        targetEc: 1.3,
         color: 'from-lime-400 to-green-600'
     },
     {
@@ -41,6 +50,9 @@ const PLANT_TYPES = [
         idealTemp: '15-26°C',
         idealPh: '5.5-6.2',
         idealEc: '1.0-1.5',
+        targetTemp: 20.5,
+        targetPh: 5.8,
+        targetEc: 1.2,
         color: 'from-pink-400 to-rose-500'
     }
 ];

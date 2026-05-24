@@ -10,6 +10,7 @@ import CalibrationWizard from './components/CalibrationWizard';
 import { Home, Settings, Activity, Cpu, Globe } from 'lucide-react';
 import { useWebSocket } from './hooks/useWebSocket';
 import { useLanguage } from './contexts/LanguageContext';
+import { api } from './services/api';
 
 function App() {
     const { t, lang, toggleLanguage } = useLanguage();
@@ -56,6 +57,24 @@ function App() {
         { id: 'config', label: t('tabConfig'), icon: Settings }
     ];
 
+    // Handle plant selection and sync with backend autopilot
+    const handlePlantSelection = async (plant) => {
+        setSelectedPlant(plant);
+        if (plant) {
+            try {
+                // Fetch current config so we don't overwrite tolerances/enabled states
+                const currentConfig = await api.getConfig();
+                
+                // Update the backend targets
+                await api.updateParameter('ph', { ...currentConfig.ph, target: plant.targetPh });
+                await api.updateParameter('ec', { ...currentConfig.ec, target: plant.targetEc });
+                console.log(`Backend autopilot synced for ${plant.name}: pH ${plant.targetPh}, EC ${plant.targetEc}`);
+            } catch (error) {
+                console.error("Failed to sync targets to backend", error);
+            }
+        }
+    };
+
     // -- MAIN MENU VIEW --
     let content;
     if (viewMode === 'main-menu') {
@@ -78,7 +97,7 @@ function App() {
             <div className="relative min-h-screen bg-slate-950">
                 {!selectedPlant ? (
                     <PlantSelector 
-                        onSelectPlant={setSelectedPlant} 
+                        onSelectPlant={handlePlantSelection} 
                         onBackToMenu={() => setViewMode('main-menu')}
                         onTechView={() => setViewMode('technical')}
                     />
