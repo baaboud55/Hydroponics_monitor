@@ -1,9 +1,15 @@
 #include <Arduino.h>
-#include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
+#include <WiFiManager.h>
+#include <WebServer.h>
+#include <LittleFS.h>
+#include <ArduinoJson.h>
+#include <ESPmDNS.h>
+#include <ArduinoOTA.h>
+#include <HTTPUpdateServer.h>
 #include <HydroActuators.h>
-#include <HydroMQTT.h>
-#include <HydroDosingPumps.h>
 #include <HydroSensors.h>
+#include <HydroDosingPumps.h>
+#include <HydroControl.h>
 
 // Shift Register Pins
 #define PIN_SR_DATA 26
@@ -24,186 +30,160 @@
 #define PIN_SENSOR_PH 36
 #define PIN_SENSOR_EC 39
 
-// MQTT Settings (Hardcoded for now, should be dynamic later)
-#define MQTT_SERVER "test.mosquitto.org"
-#define MQTT_PORT 1883
-#define DEVICE_ID "hydro-misc-01"
-
 HydroActuators actuators(PIN_SR_DATA, PIN_SR_CLOCK, PIN_SR_LATCH, PIN_SR_CLEAR);
 HydroDosingPumps dosingPumps(PIN_DOSING_A, PIN_DOSING_B, PIN_DOSING_PH, PIN_DOSING_AUX);
 HydroSensors sensors(PIN_SENSOR_DS18B20, PIN_SENSOR_DHT, PIN_SENSOR_LEVEL, PIN_SENSOR_CURRENT, PIN_SENSOR_PH, PIN_SENSOR_EC);
-WiFiClient espClient;
-HydroMQTT mqtt(espClient, MQTT_SERVER, MQTT_PORT, DEVICE_ID);
 
-// Callback for incoming MQTT messages
-void mqttCallback(char* topic, byte* payload, unsigned int length) {
-  String topicStr = String(topic);
-  String payloadStr = "";
-  for (unsigned int i = 0; i < length; i++) {
-    payloadStr += (char)payload[i];
-  }
-  
-  Serial.print("Message arrived [");
-  Serial.print(topicStr);
-  Serial.print("] ");
-  Serial.println(payloadStr);
+HydroControl hydroControl(sensors, dosingPumps);
+WebServer server(80);
+HTTPUpdateServer httpUpdater;
 
-  // Topic format: hydro/<device>/control/<type>/<index>
-  // Example: hydro/hydro-misc-01/control/solenoid/0
-  
-  // Basic parsing (this can be improved)
-  if (topicStr.indexOf("/control/solenoid/") > 0) {
-      int lastSlash = topicStr.lastIndexOf('/');
-      String indexStr = topicStr.substring(lastSlash + 1);
-      int index = indexStr.toInt();
-      bool state = (payloadStr == "1" || payloadStr == "ON" || payloadStr == "true");
-      
-      actuators.setSolenoid(index, state);
-      actuators.commit();
-      Serial.printf("Set Solenoid %d to %d\n", index, state);
-  }
-  else if (topicStr.indexOf("/control/pump/") > 0) {
-      int lastSlash = topicStr.lastIndexOf('/');
-      String indexStr = topicStr.substring(lastSlash + 1);
-      int index = indexStr.toInt();
-      bool state = (payloadStr == "1" || payloadStr == "ON" || payloadStr == "true");
-      
-      actuators.setPump(index, state);
-      actuators.commit();
-      Serial.printf("Set Pump %d to %d\n", index, state);
-  }
-  else if (topicStr.indexOf("/control/debug") > 0) {
-       bool state = (payloadStr == "1" || payloadStr == "ON" || payloadStr == "true");
-       actuators.setDebugLed(state);
-       actuators.commit();
-  }
-  // Dosing pump control: hydro/hydro-misc-01/control/dosing/0/speed or /dose
-  else if (topicStr.indexOf("/control/dosing/") > 0) {
-      // Extract pump index
-      int dosingIdx = topicStr.indexOf("/control/dosing/");
-      String afterDosing = topicStr.substring(dosingIdx + 16); // "/control/dosing/" = 16 chars
-      int slashPos = afterDosing.indexOf('/');
-      int pumpIndex = afterDosing.substring(0, slashPos).toInt();
-      String command = afterDosing.substring(slashPos + 1);
-      
-      if (command == "speed") {
-          int speed = payloadStr.toInt();
-          dosingPumps.setSpeed(pumpIndex, speed);
-      }
-      else if (command == "dose") {
-          unsigned long duration = payloadStr.toInt();
-          dosingPumps.dose(pumpIndex, duration);
-      }
-  }
-  else if (topicStr.indexOf("/control/calibrate/") > 0) {
-      int lastSlash = topicStr.lastIndexOf('/');
-      String sensor = topicStr.substring(lastSlash + 1);
-      
-      sensors.processCalibration(sensor, payloadStr);
-      Serial.printf("Received Calibration command for %s: %s\n", sensor.c_str(), payloadStr.c_str());
-  }
+void handleApiState() {
+    StaticJsonDocument<512> doc;
+    doc["ph"] = sensors.getPH();
+    doc["ec"] = sensors.getEC();
+    doc["water_temp"] = sensors.getWaterTemp();
+    doc["air_temp"] = sensors.getAirTemp();
+    doc["humidity"] = sensors.getHumidity();
+    doc["power_current"] = sensors.getCurrent();
+    doc["water_level"] = sensors.isWaterLevelOk() ? 100 : 0;
+    
+    // Pump statuses
+    JsonArray pumps = doc.createNestedArray("pumps");
+    for (int i=0; i<4; i++) {
+        JsonObject pump = pumps.createNestedObject();
+        pump["id"] = i;
+        pump["speed"] = dosingPumps.getSpeed(i);
+        pump["is_dosing"] = dosingPumps.isDosing(i);
+    }
+
+    String response;
+    serializeJson(doc, response);
+    
+    server.sendHeader("Access-Control-Allow-Origin", "*");
+    server.send(200, "application/json", response);
+}
+
+void handleApiConfig() {
+    // Stub for now, can implement config getting
+    StaticJsonDocument<512> doc;
+    doc["targets"]["ph"] = 6.0;
+    doc["targets"]["ec"] = 1.5;
+    doc["automation_enabled"]["ph"] = true;
+    doc["automation_enabled"]["ec"] = false;
+
+    String response;
+    serializeJson(doc, response);
+    server.sendHeader("Access-Control-Allow-Origin", "*");
+    server.send(200, "application/json", response);
 }
 
 void setup() {
-  Serial.begin(115200);
-  Serial.println("\n\nHydroponic Automation System - Booting...");
+    Serial.begin(115200);
+    Serial.println("\n\nHydroponic Standalone System - Booting...");
 
-  // Initialize Actuators
-  actuators.begin();
-  actuators.setDebugLed(true);
-  actuators.commit();
-  Serial.println("Actuators Initialized");
-  
-  // Initialize Dosing Pumps
-  dosingPumps.begin();
+    // Initialize Hardware
+    actuators.begin();
+    dosingPumps.begin();
+    sensors.begin();
+    hydroControl.begin();
 
-  // Initialize Sensors
-  sensors.begin();
-  Serial.println("Sensors Initialized");
+    // Mount LittleFS for the Web Dashboard
+    if (!LittleFS.begin(true)) {
+        Serial.println("An Error has occurred while mounting LittleFS");
+    } else {
+        Serial.println("LittleFS Mounted Successfully");
+    }
 
-  WiFiManager wm;
-  
-  // wm.resetSettings(); // Uncomment to wipe settings for testing
+    WiFiManager wm;
+    bool res = wm.autoConnect("HydroMisc-Setup", "password");
+    if(!res) {
+        Serial.println("Failed to connect to WiFi");
+    } else {
+        Serial.print("Connected! IP Address: ");
+        Serial.println(WiFi.localIP());
+    }
 
-  // Automatically connect using saved credentials,
-  // if connection fails, it starts an access point with the specified name
-  bool res = wm.autoConnect("HydroMisc-Setup", "password"); // AP Name, AP Password
+    if (MDNS.begin("hydromonitor")) {
+        Serial.println("MDNS responder started at http://hydromonitor.local");
+        MDNS.addService("http", "tcp", 80);
+    } else {
+        Serial.println("Error setting up MDNS responder!");
+    }
 
-  if(!res) {
-      Serial.println("Failed to connect");
-      // ESP.restart();
-  } 
-  else {
-      //if you get here you have connected to the WiFi    
-      Serial.println("connected...yeey :)");
-      Serial.print("IP Address: ");
-      Serial.println(WiFi.localIP());
+    // Configure ArduinoOTA
+    ArduinoOTA.setHostname("hydromonitor");
+    ArduinoOTA.onStart([]() {
+        String type;
+        if (ArduinoOTA.getCommand() == U_FLASH) {
+            type = "sketch";
+        } else { // U_SPIFFS / U_LITTLEFS
+            type = "filesystem";
+        }
+        Serial.println("Start updating " + type);
+    });
+    ArduinoOTA.onEnd([]() {
+        Serial.println("\nEnd");
+    });
+    ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+        Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+    });
+    ArduinoOTA.onError([](ota_error_t error) {
+        Serial.printf("Error[%u]: ", error);
+        if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+        else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+        else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+        else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+        else if (error == OTA_END_ERROR) Serial.println("End Failed");
+    });
+    ArduinoOTA.begin();
 
-      // Start MQTT
-      mqtt.setCallback(mqttCallback); // Register callback
-      mqtt.begin();
-      // Send Discovery
-      mqtt.sendDiscovery("sensor", "uptime", "Uptime", "s", "duration");
-      mqtt.sendDiscovery("sensor", "do", "Dissolved Oxygen", "mg/L", "concentration");
-      mqtt.sendDiscovery("sensor", "ph", "pH Level", "pH", "");
-      mqtt.sendDiscovery("sensor", "ec", "Electrical Conductivity", "mS/cm", "conductivity");
-  }
+    // Setup HTTP Web Updater on /update
+    httpUpdater.setup(&server, "/update");
+
+
+    // --- API Endpoints ---
+    server.on("/api/state", HTTP_GET, handleApiState);
+    server.on("/api/config", HTTP_GET, handleApiConfig);
+
+    // Serve the frontend explicitly because serveStatic has a bug with index.html
+    server.on("/", HTTP_GET, []() {
+        File file = LittleFS.open("/index.html", "r");
+        if (!file) {
+            server.send(500, "text/plain", "Failed to open index.html");
+            return;
+        }
+        server.streamFile(file, "text/html");
+        file.close();
+    });
+
+    server.serveStatic("/", LittleFS, "/");
+
+    server.begin();
+    Serial.println("HTTP server started");
 }
 
 void loop() {
-  mqtt.loop();
-  
-  // Safe Water Level Check
-  if (!sensors.isWaterLevelOk()) {
-      // Emergency Cutoff: Ensure circulating pumps and dosing stop if tank is empty
-      // Example targets pump 0 (main pump) — expanding later
-      actuators.setPump(0, false);
-      actuators.commit();
-      
-      // We could also force dosingPumps to halt here if it had a hard stop method
-      // For now, logging will show it's dry.
-  } else {
-      dosingPumps.update(); // Handle timed dosing normally
-  }
+    server.handleClient();
+    ArduinoOTA.handle();
+    
+    if (!sensors.isWaterLevelOk()) {
+        actuators.setPump(0, false);
+        actuators.commit();
+    } else {
+        dosingPumps.update();
+    }
 
-  // Update Non-blocking sensors
-  sensors.update();
+    sensors.update();
+    hydroControl.update(); // Run autonomous PID loop
 
-  // Blink Debug LED to show activity
-  static bool ledState = false;
-  static unsigned long lastBlink = 0;
-  
-  if (millis() - lastBlink > 1000) {
-      lastBlink = millis();
-      ledState = !ledState;
-      actuators.setDebugLed(ledState);
-      actuators.commit();
-      
-      // Publish uptime and real sensors
-      if (mqtt.isConnected()) {
-          mqtt.publishSensor("uptime", millis() / 1000.0);
-          
-          mqtt.publishSensor("water_temp", sensors.getWaterTemp());
-          mqtt.publishSensor("air_temp", sensors.getAirTemp());
-          mqtt.publishSensor("humidity", sensors.getHumidity());
-          mqtt.publishSensor("power_current", sensors.getCurrent());
-          mqtt.publishSensor("do", sensors.getDO());
-          mqtt.publishSensor("ph", sensors.getPH());
-          mqtt.publishSensor("ec", sensors.getEC());
-          
-          // Publish Water Level (float switch maps to 100% or 0% for the UI)
-          mqtt.publishSensor("water_level", sensors.isWaterLevelOk() ? 100.0 : 0.0);
-          
-          // Publish Dosing Pump Status (Speed percent)
-          for (int i = 0; i < 4; i++) {
-              String pumpName = "dosing" + String(i) + "_speed";
-              mqtt.publishSensor(pumpName.c_str(), dosingPumps.getSpeed(i));
-          }
-
-          // Safety alert via MQTT if critical
-          if (!sensors.isWaterLevelOk()) {
-             mqtt.publishState("alert", "WATER_LEVEL_CRITICAL");
-          }
-      }
-  }
+    // Status LED blink
+    static unsigned long lastBlink = 0;
+    static bool ledState = false;
+    if (millis() - lastBlink > 1000) {
+        lastBlink = millis();
+        ledState = !ledState;
+        actuators.setDebugLed(ledState);
+        actuators.commit();
+    }
 }

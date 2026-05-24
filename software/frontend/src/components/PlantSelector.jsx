@@ -2,7 +2,7 @@ import React from 'react';
 import { Leaf, Droplets, ThermometerSun, ArrowRight, ArrowLeft, Cpu } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
-const PLANT_TYPES = [
+export const PLANT_TYPES = [
     {
         id: 'lettuce',
         name: 'Lettuce',

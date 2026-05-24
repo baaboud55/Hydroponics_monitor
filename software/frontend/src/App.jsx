@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Dashboard from './components/Dashboard';
 import ParameterConfig from './components/ParameterConfig';
 import AutomationStatus from './components/AutomationStatus';
-import PlantSelector from './components/PlantSelector';
+import PlantSelector, { PLANT_TYPES } from './components/PlantSelector';
 import SystemVisualizer from './components/SystemVisualizer';
 import MainMenu from './components/MainMenu';
 import HardwareGuide from './components/HardwareGuide';
@@ -29,23 +29,24 @@ function App() {
         return 'visualizer';
     }); // 'main-menu' | 'visualizer' | 'technical' | 'hardware-guide' | 'calibration'
     
-    const [selectedPlant, setSelectedPlant] = useState(() => {
-        try {
-            const saved = localStorage.getItem('hydro_selected_plant');
-            return saved ? JSON.parse(saved) : null;
-        } catch {
-            return null;
-        }
-    });
+    const [selectedPlant, setSelectedPlant] = useState(null);
 
-    // Persist crop selection
+    // Synchronize selected crop with the Python Backend (Single Source of Truth)
     useEffect(() => {
-        if (selectedPlant) {
-            localStorage.setItem('hydro_selected_plant', JSON.stringify(selectedPlant));
-        } else {
-            localStorage.removeItem('hydro_selected_plant');
+        if (systemData) {
+            const activeCropId = systemData?.automation_status?.active_crop || systemData?.automation_config?.active_crop;
+            if (activeCropId) {
+                const crop = PLANT_TYPES.find(p => p.id === activeCropId);
+                if (crop && (!selectedPlant || selectedPlant.id !== crop.id)) {
+                    setSelectedPlant(crop);
+                }
+            } else if (activeCropId === "") {
+                if (selectedPlant !== null) {
+                    setSelectedPlant(null);
+                }
+            }
         }
-    }, [selectedPlant]);
+    }, [systemData, selectedPlant]);
     const [activeTab, setActiveTab] = useState('dashboard');
 
     // Single WebSocket connection shared across all components
@@ -68,9 +69,16 @@ function App() {
                 // Update the backend targets
                 await api.updateParameter('ph', { ...currentConfig.ph, target: plant.targetPh });
                 await api.updateParameter('ec', { ...currentConfig.ec, target: plant.targetEc });
+                await api.setActiveCrop(plant.id);
                 console.log(`Backend autopilot synced for ${plant.name}: pH ${plant.targetPh}, EC ${plant.targetEc}`);
             } catch (error) {
                 console.error("Failed to sync targets to backend", error);
+            }
+        } else {
+            try {
+                await api.setActiveCrop("");
+            } catch (e) {
+                console.error("Failed to clear crop on backend", e);
             }
         }
     };
@@ -104,9 +112,10 @@ function App() {
                 ) : (
                     <SystemVisualizer
                         plant={selectedPlant}
-                        onBack={() => setSelectedPlant(null)}
+                        onBack={() => handlePlantSelection(null)}
                         onTechView={() => setViewMode('technical')}
                         systemData={systemData}
+                        isConnected={isConnected}
                     />
                 )}
             </div>

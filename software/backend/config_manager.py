@@ -37,6 +37,9 @@ class ParameterConfig(BaseModel):
 class SystemConfiguration(BaseModel):
     """Complete system configuration"""
     
+    # Active selected crop ID from frontend
+    active_crop: str = Field(default="", description="ID of the currently growing crop")
+
     # Parameter configurations
     ph: ParameterConfig = Field(
         default=ParameterConfig(
@@ -234,6 +237,18 @@ class ConfigManager:
         except Exception as e:
             logger.error(f"Error updating MQTT config: {e}")
             return False
+
+    def set_active_crop(self, crop_id: str) -> bool:
+        """Update the currently active crop ID"""
+        try:
+            self.config.active_crop = crop_id
+            self.save_config()
+            logger.info(f"Updated active crop to: {crop_id}")
+            return True
+        except Exception as e:
+            logger.error(f"Error updating active crop: {e}")
+            return False
+    
     
     def reset_to_defaults(self):
         """Reset configuration to factory defaults"""

@@ -189,7 +189,8 @@ def get_state():
     state["automation_config"] = {
         "targets": dosing_engine.targets,
         "tolerances": dosing_engine.tolerances,
-        "enabled": dosing_engine.automation_enabled
+        "enabled": dosing_engine.automation_enabled,
+        "active_crop": config_mgr.config.active_crop
     }
     return state
 
@@ -257,6 +258,18 @@ def toggle_automation(parameter: str, enabled: bool):
         })
         return {"status": "success", "enabled": enabled}
     raise HTTPException(status_code=400, detail="Invalid parameter")
+
+@app.post("/api/config/crop/{crop_id}")
+def set_active_crop(crop_id: str):
+    """Set the currently active crop ID. Use 'none' or 'null' to clear."""
+    # Convert special clear keywords to empty string
+    if crop_id.lower() in ["none", "null", "clear"]:
+        crop_id = ""
+        
+    success = config_mgr.set_active_crop(crop_id)
+    if success:
+        return {"status": "success", "active_crop": crop_id}
+    raise HTTPException(status_code=400, detail="Failed to set active crop")
 
 # Dosing history and manual control
 @app.get("/api/dosing/history")
@@ -387,7 +400,8 @@ async def websocket_endpoint(websocket: WebSocket):
                     "ph": system_state.get("ph", 0),
                     "ec": system_state.get("ec", 0)
                 },
-                "enabled": dosing_engine.automation_enabled
+                "enabled": dosing_engine.automation_enabled,
+                "active_crop": config_mgr.config.active_crop
             }
             await websocket.send_json(enhanced_state)
             await asyncio.sleep(1)

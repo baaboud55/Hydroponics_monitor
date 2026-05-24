@@ -1,5 +1,5 @@
 // API Service for Backend Communication
-const API_BASE_URL = `http://${window.location.hostname}:8000`;
+const API_BASE_URL = ``;
 
 export const api = {
     // Get current system state
@@ -22,6 +22,16 @@ export const api = {
             body: JSON.stringify({ parameter, ...updates })
         });
         if (!response.ok) throw new Error('Failed to update parameter');
+        return await response.json();
+    },
+
+    // Set active crop
+    setActiveCrop: async (cropId) => {
+        const id = cropId || 'none';
+        const response = await fetch(`${API_BASE_URL}/api/config/crop/${id}`, {
+            method: 'POST'
+        });
+        if (!response.ok) throw new Error('Failed to set active crop');
         return await response.json();
     },
 
@@ -101,7 +111,8 @@ export const api = {
 
     // WebSocket connection for real-time updates
     connectWebSocket: (onMessage) => {
-        const ws = new WebSocket(`ws://${window.location.hostname}:8000/ws`);
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
 
         ws.onopen = () => {
             console.log('WebSocket connected');

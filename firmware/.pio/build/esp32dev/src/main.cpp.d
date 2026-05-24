@@ -212,14 +212,21 @@
  C:/Users/baabo/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFiUdp.h \
  .pio/libdeps/esp32dev/WiFiManager/wm_strings_en.h \
  .pio/libdeps/esp32dev/WiFiManager/wm_consts_en.h \
- lib/HydroActuators/HydroActuators.h lib/HydroMQTT/HydroMQTT.h \
- .pio/libdeps/esp32dev/PubSubClient/src/PubSubClient.h \
+ C:/Users/baabo/.platformio/packages/framework-arduinoespressif32/libraries/LittleFS/src/LittleFS.h \
+ C:/Users/baabo/.platformio/packages/framework-arduinoespressif32/libraries/FS/src/FS.h \
  .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.h \
  .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson.hpp \
  .pio/libdeps/esp32dev/ArduinoJson/src/ArduinoJson/Configuration.hpp \
- lib/HydroDosingPumps/HydroDosingPumps.h lib/HydroSensors/HydroSensors.h \
+ C:/Users/baabo/.platformio/packages/framework-arduinoespressif32/libraries/ESPmDNS/src/ESPmDNS.h \
+ C:/Users/baabo/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/mdns/include/mdns.h \
+ C:/Users/baabo/.platformio/packages/framework-arduinoespressif32/libraries/ArduinoOTA/src/ArduinoOTA.h \
+ C:/Users/baabo/.platformio/packages/framework-arduinoespressif32/libraries/HTTPUpdateServer/src/HTTPUpdateServer.h \
+ C:/Users/baabo/.platformio/packages/framework-arduinoespressif32/libraries/SPIFFS/src/SPIFFS.h \
+ C:/Users/baabo/.platformio/packages/framework-arduinoespressif32/cores/esp32/StreamString.h \
+ lib/HydroActuators/HydroActuators.h lib/HydroSensors/HydroSensors.h \
  .pio/libdeps/esp32dev/OneWire/OneWire.h \
  .pio/libdeps/esp32dev/OneWire/util/OneWire_direct_regtype.h \
  .pio/libdeps/esp32dev/DallasTemperature/DallasTemperature.h \
  .pio/libdeps/esp32dev/DHT\ sensor\ library/DHT.h \
- C:/Users/baabo/.platformio/packages/framework-arduinoespressif32/libraries/Preferences/src/Preferences.h
+ C:/Users/baabo/.platformio/packages/framework-arduinoespressif32/libraries/Preferences/src/Preferences.h \
+ lib/HydroDosingPumps/HydroDosingPumps.h lib/HydroControl/HydroControl.h

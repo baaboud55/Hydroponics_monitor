@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Settings, ArrowLeft, Droplets, Activity, Thermometer, FlaskConical } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
-export default function SystemVisualizer({ plant, onBack, onTechView, systemData }) {
+export default function SystemVisualizer({ plant, onBack, onTechView, systemData, isConnected }) {
     const { t } = useLanguage();
     const [dosing, setDosing] = useState(null);
 
@@ -16,10 +16,10 @@ export default function SystemVisualizer({ plant, onBack, onTechView, systemData
         return () => clearInterval(interval);
     }, []);
 
-    // Simulated "current" values hunting towards the plant's ideal target
-    const currentPh = systemData?.ph?.value || '5.8';
-    const currentEc = systemData?.ec?.value || '1.4';
-    const currentTemp = systemData?.temp?.value || '22.0';
+    // Current sensor values from ESP32
+    const currentPh = systemData?.ph?.toFixed(1) || '--';
+    const currentEc = systemData?.ec?.toFixed(1) || '--';
+    const currentTemp = systemData?.water_temp?.toFixed(1) || '--';
 
     return (
         <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col relative overflow-hidden font-sans">
@@ -47,8 +47,8 @@ export default function SystemVisualizer({ plant, onBack, onTechView, systemData
 
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-800/80 border border-slate-700">
-                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)] animate-pulse"></span>
-                        <span className="text-sm font-medium tracking-wide">{t('systemOnline')} </span>
+                        <span className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)] animate-pulse' : 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]'}`}></span>
+                        <span className="text-sm font-medium tracking-wide">{isConnected ? t('systemOnline') : 'Connecting...'} </span>
                     </div>
                 </div>
             </header>

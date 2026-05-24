@@ -1,69 +1,45 @@
 import { useState, useEffect, useRef } from 'react';
 
 /**
- * Custom hook for WebSocket connection to backend
+ * Custom hook that polls backend API instead of WebSockets
  * Provides real-time sensor data and connection status
  */
-export function useWebSocket(url = 'ws://localhost:8000/ws') {
+export function useWebSocket() {
     const [data, setData] = useState(null);
     const [isConnected, setIsConnected] = useState(false);
     const [error, setError] = useState(null);
-    const ws = useRef(null);
-    const reconnectTimeout = useRef(null);
+    const { getState } = useBackendAPI();
 
     useEffect(() => {
-        const connect = () => {
-            try {
-                ws.current = new WebSocket(url);
+        let isMounted = true;
+        let timeoutId = null;
 
-                ws.current.onopen = () => {
-                    console.log('WebSocket connected');
+        const poll = async () => {
+            try {
+                const result = await getState();
+                if (isMounted) {
+                    setData(result);
                     setIsConnected(true);
                     setError(null);
-                };
-
-                ws.current.onmessage = (event) => {
-                    try {
-                        const receivedData = JSON.parse(event.data);
-                        setData(receivedData);
-                    } catch (err) {
-                        console.error('Failed to parse WebSocket message:', err);
-                    }
-                };
-
-                ws.current.onerror = (event) => {
-                    console.error('WebSocket error:', event);
-                    setError('Connection error');
-                };
-
-                ws.current.onclose = () => {
-                    console.log('WebSocket disconnected');
-                    setIsConnected(false);
-
-                    // Auto-reconnect after 3 seconds
-                    reconnectTimeout.current = setTimeout(() => {
-                        console.log('Attempting to reconnect...');
-                        connect();
-                    }, 3000);
-                };
+                }
             } catch (err) {
-                console.error('Failed to create WebSocket:', err);
-                setError(err.message);
+                if (isMounted) {
+                    setIsConnected(false);
+                    setError('Connection error');
+                }
+            }
+            if (isMounted) {
+                timeoutId = setTimeout(poll, 2000);
             }
         };
 
-        connect();
+        poll();
 
-        // Cleanup on unmount
         return () => {
-            if (reconnectTimeout.current) {
-                clearTimeout(reconnectTimeout.current);
-            }
-            if (ws.current) {
-                ws.current.close();
-            }
+            isMounted = false;
+            if (timeoutId) clearTimeout(timeoutId);
         };
-    }, [url]);
+    }, []);
 
     return { data, isConnected, error };
 }
@@ -72,7 +48,7 @@ export function useWebSocket(url = 'ws://localhost:8000/ws') {
  * Hook for sending API requests to backend
  */
 export function useBackendAPI() {
-    const baseURL = 'http://localhost:8000';
+    const baseURL = '';
 
     const manualDose = async (pumpIndex, durationMs) => {
         try {

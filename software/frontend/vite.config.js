@@ -2,15 +2,18 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
+import viteCompression from 'vite-plugin-compression';
+
 // https://vitejs.dev/config/
 export default defineConfig({
-    base: '/Hydroponics_monitor/app/',
+    base: '', // Relative paths for ESP32
     build: {
-        outDir: '../../docs/app',  // GitHub Pages serves from docs/
+        outDir: '../../firmware/data',  // Output to PlatformIO LittleFS data dir
         emptyOutDir: true,
     },
     plugins: [
         react(),
+        viteCompression({ algorithm: 'gzip' }), // Compress for ESP32
         VitePWA({
             registerType: 'autoUpdate',
             includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
