@@ -1,16 +1,18 @@
-import { useState, useEffect } from 'react';
-import Dashboard from './components/Dashboard';
-import ParameterConfig from './components/ParameterConfig';
-import AutomationStatus from './components/AutomationStatus';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import PlantSelector, { PLANT_TYPES } from './components/PlantSelector';
 import SystemVisualizer from './components/SystemVisualizer';
-import MainMenu from './components/MainMenu';
-import HardwareGuide from './components/HardwareGuide';
-import CalibrationWizard from './components/CalibrationWizard';
 import { Home, Settings, Activity, Cpu, Globe } from 'lucide-react';
 import { useWebSocket } from './hooks/useWebSocket';
 import { useLanguage } from './contexts/LanguageContext';
 import { api } from './services/api';
+
+// Lazy load non-critical components for fast initial render
+const Dashboard = lazy(() => import('./components/Dashboard'));
+const ParameterConfig = lazy(() => import('./components/ParameterConfig'));
+const AutomationStatus = lazy(() => import('./components/AutomationStatus'));
+const MainMenu = lazy(() => import('./components/MainMenu'));
+const HardwareGuide = lazy(() => import('./components/HardwareGuide'));
+const CalibrationWizard = lazy(() => import('./components/CalibrationWizard'));
 
 function App() {
     const { t, lang, toggleLanguage } = useLanguage();
@@ -187,7 +189,14 @@ function App() {
                 <Globe className="w-4 h-4" />
                 {lang === 'en' ? 'عربي' : 'English'}
             </button>
-            {content}
+            <Suspense fallback={
+                <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-center text-emerald-500">
+                    <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                    <p className="font-semibold text-lg animate-pulse">Loading HydroMonitor...</p>
+                </div>
+            }>
+                {content}
+            </Suspense>
         </>
     );
 }

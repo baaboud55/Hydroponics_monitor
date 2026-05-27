@@ -23,11 +23,17 @@
 #define PIN_DOSING_PH 21
 #define PIN_DOSING_AUX 22
 
+// Digital Expansion Port 0: DS18B20 water temp (OneWire needs bidirectional - use Out pin)
 #define PIN_SENSOR_DS18B20 4
-#define PIN_SENSOR_DHT 5
+// Digital Expansion Port 1: DHT21/AM2301 air temp+humidity (data pin)
+#define PIN_SENSOR_DHT 17
+// DC Resistance / Water Level
 #define PIN_SENSOR_LEVEL 32
+// Current Sense (built into pump headers)
 #define PIN_SENSOR_CURRENT 35
+// pH Probe on pH BNC #0
 #define PIN_SENSOR_PH 36
+// EC Probe on pH BNC #1 (EC probe plugged into second pH BNC connector)
 #define PIN_SENSOR_EC 39
 
 HydroActuators actuators(PIN_SR_DATA, PIN_SR_CLOCK, PIN_SR_LATCH, PIN_SR_CLEAR);

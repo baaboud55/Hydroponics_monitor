@@ -3,9 +3,9 @@ import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import { Sprout, ArrowRight, Settings, Droplets, Droplet, Leaf, Activity } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
-// Import images directly so Vite automatically handles hashing and GitHub Pages base paths
-import homieImg from '../assets/homie-system.png';
-import lifestyleImg from '../assets/lifestyle-kitchen.png';
+// Use WebP images from the public folder for 10x faster loading
+const homieImg = `${import.meta.env.BASE_URL}homie-system.webp`;
+const lifestyleImg = `${import.meta.env.BASE_URL}lifestyle-kitchen.webp`;
 
 function MinimalistButton({ children, onClick, primary }) {
     return (
