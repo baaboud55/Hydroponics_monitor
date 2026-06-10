@@ -45,10 +45,6 @@ function App() {
                 if (crop && (!selectedPlant || selectedPlant.id !== crop.id)) {
                     setSelectedPlant(crop);
                 }
-            } else if (activeCropId === "") {
-                if (selectedPlant !== null) {
-                    setSelectedPlant(null);
-                }
             }
         }
     }, [systemData, selectedPlant]);

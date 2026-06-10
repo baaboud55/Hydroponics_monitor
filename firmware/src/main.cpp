@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <WiFi.h>
 #include <WiFiManager.h>
 #include <WebServer.h>
 #include <LittleFS.h>
@@ -6,6 +7,9 @@
 #include <ESPmDNS.h>
 #include <ArduinoOTA.h>
 #include <HTTPUpdateServer.h>
+#include <WiFiClientSecure.h>
+#include <ArduinoWebsockets.h>
+#include <uri/UriBraces.h>
 #include <HydroActuators.h>
 #include <HydroSensors.h>
 #include <HydroDosingPumps.h>
@@ -45,7 +49,11 @@ HydroControl hydroControl(sensors, dosingPumps);
 WebServer server(80);
 HTTPUpdateServer httpUpdater;
 
-void handleApiState() {
+using namespace websockets;
+WebsocketsServer webSocket;
+std::vector<WebsocketsClient> wsClients;
+
+String getApiStateJson() {
     StaticJsonDocument<1024> doc;
     doc["ph"] = sensors.getPH();
     doc["ec"] = sensors.getEC();
@@ -87,7 +95,11 @@ void handleApiState() {
 
     String response;
     serializeJson(doc, response);
-    
+    return response;
+}
+
+void handleApiState() {
+    String response = getApiStateJson();
     server.sendHeader("Access-Control-Allow-Origin", "*");
     server.send(200, "application/json", response);
 }
@@ -230,12 +242,99 @@ void setup() {
     // Setup HTTP Web Updater on /update
     httpUpdater.setup(&server, "/update");
 
+    // --- WebSockets ---
+    webSocket.listen(81);
+
+    // --- Global CORS handler for OPTIONS requests ---
+    server.onNotFound([]() {
+        if (server.method() == HTTP_OPTIONS) {
+            server.sendHeader("Access-Control-Allow-Origin", "*");
+            server.sendHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+            server.sendHeader("Access-Control-Allow-Headers", "Content-Type");
+            server.send(204);
+        } else {
+            server.send(404, "text/plain", "Not found");
+        }
+    });
+
 
     // --- API Endpoints ---
     server.on("/api/state", HTTP_GET, handleApiState);
     server.on("/api/config", HTTP_GET, handleApiConfig);
     server.on("/api/config/parameter", HTTP_POST, handleApiConfigParameter);
-    server.on("/api/config/parameter", HTTP_OPTIONS, handleApiConfigParameter);
+    
+    // Actuators
+    server.on(UriBraces("/api/actuators/solenoid/{}/{}"), HTTP_POST, []() {
+        int index = server.pathArg(0).toInt();
+        String stateStr = server.pathArg(1);
+        actuators.setSolenoid(index, (stateStr == "1" || stateStr == "true"));
+        actuators.commit();
+        server.sendHeader("Access-Control-Allow-Origin", "*");
+        server.send(200, "application/json", "{\"status\":\"ok\"}");
+    });
+
+    server.on(UriBraces("/api/actuators/pump/{}/{}"), HTTP_POST, []() {
+        int index = server.pathArg(0).toInt();
+        String stateStr = server.pathArg(1);
+        actuators.setPump(index, (stateStr == "1" || stateStr == "true"));
+        actuators.commit();
+        server.sendHeader("Access-Control-Allow-Origin", "*");
+        server.send(200, "application/json", "{\"status\":\"ok\"}");
+    });
+
+    server.on(UriBraces("/api/actuators/main_pump/{}"), HTTP_POST, []() {
+        String stateStr = server.pathArg(0);
+        actuators.setBigPump(stateStr == "1" || stateStr == "true");
+        actuators.commit();
+        server.sendHeader("Access-Control-Allow-Origin", "*");
+        server.send(200, "application/json", "{\"status\":\"ok\"}");
+    });
+
+    // Dosing & Calibration
+    server.on("/api/dosing/manual", HTTP_POST, []() {
+        if (!server.hasArg("plain")) {
+            server.sendHeader("Access-Control-Allow-Origin", "*");
+            server.send(400, "text/plain", "Missing body");
+            return;
+        }
+        StaticJsonDocument<256> doc;
+        deserializeJson(doc, server.arg("plain"));
+        int pump_index = doc["pump_index"];
+        int duration_ms = doc["duration_ms"];
+        dosingPumps.dose(pump_index, duration_ms);
+        server.sendHeader("Access-Control-Allow-Origin", "*");
+        server.send(200, "application/json", "{\"status\":\"ok\"}");
+    });
+    
+    server.on("/api/dosing/reset", HTTP_POST, []() {
+        hydroControl.resetControllers();
+        server.sendHeader("Access-Control-Allow-Origin", "*");
+        server.send(200, "application/json", "{\"status\":\"ok\"}");
+    });
+
+    server.on("/api/calibrate", HTTP_POST, []() {
+        if (!server.hasArg("plain")) {
+            server.sendHeader("Access-Control-Allow-Origin", "*");
+            server.send(400, "text/plain", "Missing body");
+            return;
+        }
+        StaticJsonDocument<256> doc;
+        deserializeJson(doc, server.arg("plain"));
+        sensors.processCalibration(doc["sensor"].as<String>(), doc["command"].as<String>());
+        server.sendHeader("Access-Control-Allow-Origin", "*");
+        server.send(200, "application/json", "{\"status\":\"ok\"}");
+    });
+
+    // Fake Endpoints for Frontend Compatibility
+    server.on(UriBraces("/api/config/crop/{}"), HTTP_POST, []() {
+        server.sendHeader("Access-Control-Allow-Origin", "*");
+        server.send(200, "application/json", "{\"status\":\"ok\"}");
+    });
+
+    server.on("/api/dosing/history", HTTP_GET, []() {
+        server.sendHeader("Access-Control-Allow-Origin", "*");
+        server.send(200, "application/json", "{\"history\":[]}");
+    });
 
     // Serve the frontend explicitly because serveStatic has a bug with index.html
     server.on("/", HTTP_GET, []() {
@@ -257,6 +356,25 @@ void setup() {
 void loop() {
     server.handleClient();
     ArduinoOTA.handle();
+
+    // Accept new websocket connections
+    if (webSocket.poll()) {
+        WebsocketsClient client = webSocket.accept();
+        if (client.available()) {
+            Serial.println("WS Client Connected!");
+            wsClients.push_back(client);
+        }
+    }
+
+    // Cleanup disconnected clients and poll active ones
+    for (size_t i = 0; i < wsClients.size(); i++) {
+        if (!wsClients[i].available()) {
+            wsClients.erase(wsClients.begin() + i);
+            i--;
+        } else {
+            wsClients[i].poll();
+        }
+    }
     
     if (!sensors.isWaterLevelOk()) {
         actuators.setPump(0, false);
@@ -268,7 +386,7 @@ void loop() {
     sensors.update();
     hydroControl.update(); // Run autonomous PID loop
 
-    // Status LED blink
+    // Status LED blink & WS Broadcast
     static unsigned long lastBlink = 0;
     static bool ledState = false;
     if (millis() - lastBlink > 1000) {
@@ -276,5 +394,10 @@ void loop() {
         ledState = !ledState;
         actuators.setDebugLed(ledState);
         actuators.commit();
+        
+        String json = getApiStateJson();
+        for (auto& client : wsClients) {
+            client.send(json);
+        }
     }
 }

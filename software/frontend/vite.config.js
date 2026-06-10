@@ -20,7 +20,7 @@ export default defineConfig({
     },
     plugins: [
         react(),
-        viteCompression({ algorithm: 'gzip' }), // Compress for ESP32
+        viteCompression({ algorithm: 'gzip', deleteOriginFile: true }), // Compress and remove original to save ESP32 space
         VitePWA({
             registerType: 'autoUpdate',
             includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],

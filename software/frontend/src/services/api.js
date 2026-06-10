@@ -117,10 +117,13 @@ export const api = {
         return await response.json();
     },
 
-    // WebSocket connection for real-time updates
     connectWebSocket: (onMessage) => {
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+        // If developing locally, connect to Python on 8000. 
+        // If on GitHub Pages, connect to ESP32 on hydromonitor.local:81
+        // Else (served from ESP32 directly), connect to ESP32 on port 81.
+        const wsUrl = isLocalhost ? `ws://localhost:8000/ws` : (isGithubPages ? `ws://hydromonitor.local:81/` : `ws://${window.location.hostname}:81/`);
+        const ws = new WebSocket(wsUrl);
 
         ws.onopen = () => {
             console.log('WebSocket connected');

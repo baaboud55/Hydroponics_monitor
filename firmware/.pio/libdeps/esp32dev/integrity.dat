@@ -1,7 +1,8 @@
-adafruit/Adafruit Unified Sensor @ ^1.1.14
 knolleary/PubSubClient @ ^2.8
-paulstoffregen/OneWire @ ^2.3.7
+adafruit/DHT sensor library @ ^1.4.6
 bblanchon/ArduinoJson @ ^6.21.0
+links2004/WebSockets @ 2.4.1
 milesburton/DallasTemperature @ ^3.11.0
 tzapu/WiFiManager @ ^2.0.17
-adafruit/DHT sensor library @ ^1.4.6
+adafruit/Adafruit Unified Sensor @ ^1.1.14
+paulstoffregen/OneWire @ ^2.3.7
