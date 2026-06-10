@@ -88,7 +88,19 @@ export function useBackendAPI() {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            return await response.json();
+            const data = await response.json();
+            
+            // Map automation_config to automation_status for the UI if coming from HTTP
+            if (data.automation_config) {
+                data.automation_status = {
+                    ...data.automation_config,
+                    current: {
+                        ph: data.ph,
+                        ec: data.ec
+                    }
+                };
+            }
+            return data;
         } catch (error) {
             console.error('Failed to fetch state:', error);
             throw error;

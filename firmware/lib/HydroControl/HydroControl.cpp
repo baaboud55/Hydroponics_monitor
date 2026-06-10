@@ -1,4 +1,7 @@
 #include "HydroControl.h"
+#include <Preferences.h>
+
+Preferences controlPrefs;
 
 // --- PID Controller ---
 PIDController::PIDController(PIDParameters params, float sample_time)
@@ -127,7 +130,32 @@ HydroControl::HydroControl(HydroSensors& sensors, HydroDosingPumps& pumps)
     _last_update = 0;
 }
 
+void HydroControl::loadConfig() {
+    controlPrefs.begin("hydro_control", true); // read-only
+    _ph_target = controlPrefs.getFloat("ph_target", 6.0);
+    _ph_tolerance = controlPrefs.getFloat("ph_tol", 0.2);
+    _ph_enabled = controlPrefs.getBool("ph_en", false);
+    
+    _ec_target = controlPrefs.getFloat("ec_target", 1.5);
+    _ec_tolerance = controlPrefs.getFloat("ec_tol", 0.1);
+    _ec_enabled = controlPrefs.getBool("ec_en", false);
+    controlPrefs.end();
+}
+
+void HydroControl::saveConfig() {
+    controlPrefs.begin("hydro_control", false); // read-write
+    controlPrefs.putFloat("ph_target", _ph_target);
+    controlPrefs.putFloat("ph_tol", _ph_tolerance);
+    controlPrefs.putBool("ph_en", _ph_enabled);
+    
+    controlPrefs.putFloat("ec_target", _ec_target);
+    controlPrefs.putFloat("ec_tol", _ec_tolerance);
+    controlPrefs.putBool("ec_en", _ec_enabled);
+    controlPrefs.end();
+}
+
 void HydroControl::begin() {
+    loadConfig();
     Serial.println("HydroControl initialized.");
 }
 

@@ -46,14 +46,14 @@ WebServer server(80);
 HTTPUpdateServer httpUpdater;
 
 void handleApiState() {
-    StaticJsonDocument<512> doc;
+    StaticJsonDocument<1024> doc;
     doc["ph"] = sensors.getPH();
     doc["ec"] = sensors.getEC();
     doc["waterTemp"] = sensors.getWaterTemp();
     doc["airTemp"] = sensors.getAirTemp();
     doc["humidity"] = sensors.getHumidity();
     doc["waterLevel"] = sensors.isWaterLevelOk() ? 100 : 0;
-    doc["pumpState"] = 0; // TODO: Implement pump state getter if needed
+    doc["pumpState"] = 0;
     
     // Debug variables
     doc["ec_R"] = sensors.getLastEcR();
@@ -69,6 +69,22 @@ void handleApiState() {
         pump["is_dosing"] = dosingPumps.isDosing(i);
     }
 
+    // Automation Config
+    JsonObject auto_config = doc.createNestedObject("automation_config");
+    JsonObject targets = auto_config.createNestedObject("targets");
+    targets["ph"] = hydroControl.getPhTarget();
+    targets["ec"] = hydroControl.getEcTarget();
+    
+    JsonObject tolerances = auto_config.createNestedObject("tolerances");
+    tolerances["ph"] = hydroControl.getPhTolerance();
+    tolerances["ec"] = hydroControl.getEcTolerance();
+    
+    JsonObject enabled = auto_config.createNestedObject("enabled");
+    enabled["ph"] = hydroControl.isPhEnabled();
+    enabled["ec"] = hydroControl.isEcEnabled();
+    
+    auto_config["active_crop"] = "";
+
     String response;
     serializeJson(doc, response);
     
@@ -77,17 +93,78 @@ void handleApiState() {
 }
 
 void handleApiConfig() {
-    // Stub for now, can implement config getting
     StaticJsonDocument<512> doc;
-    doc["targets"]["ph"] = 6.0;
-    doc["targets"]["ec"] = 1.5;
-    doc["automation_enabled"]["ph"] = true;
-    doc["automation_enabled"]["ec"] = false;
+    JsonObject targets = doc.createNestedObject("targets");
+    targets["ph"] = hydroControl.getPhTarget();
+    targets["ec"] = hydroControl.getEcTarget();
+    
+    JsonObject tolerances = doc.createNestedObject("tolerances");
+    tolerances["ph"] = hydroControl.getPhTolerance();
+    tolerances["ec"] = hydroControl.getEcTolerance();
+    
+    JsonObject enabled = doc.createNestedObject("enabled");
+    enabled["ph"] = hydroControl.isPhEnabled();
+    enabled["ec"] = hydroControl.isEcEnabled();
 
     String response;
     serializeJson(doc, response);
     server.sendHeader("Access-Control-Allow-Origin", "*");
     server.send(200, "application/json", response);
+}
+
+void handleApiConfigParameter() {
+    if (server.method() == HTTP_OPTIONS) {
+        server.sendHeader("Access-Control-Allow-Origin", "*");
+        server.sendHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+        server.sendHeader("Access-Control-Allow-Headers", "Content-Type");
+        server.send(204);
+        return;
+    }
+    
+    if (server.hasArg("plain") == false) {
+        server.sendHeader("Access-Control-Allow-Origin", "*");
+        server.send(400, "text/plain", "Body not received");
+        return;
+    }
+    
+    String body = server.arg("plain");
+    StaticJsonDocument<256> doc;
+    DeserializationError error = deserializeJson(doc, body);
+    
+    if (error) {
+        server.sendHeader("Access-Control-Allow-Origin", "*");
+        server.send(400, "text/plain", "Invalid JSON");
+        return;
+    }
+    
+    const char* parameter = doc["parameter"];
+    if (!parameter) {
+        server.sendHeader("Access-Control-Allow-Origin", "*");
+        server.send(400, "text/plain", "Missing parameter");
+        return;
+    }
+    
+    if (strcmp(parameter, "ph") == 0) {
+        float target = doc.containsKey("target") ? doc["target"].as<float>() : hydroControl.getPhTarget();
+        float tol = doc.containsKey("tolerance") ? doc["tolerance"].as<float>() : hydroControl.getPhTolerance();
+        bool en = doc.containsKey("enabled") ? doc["enabled"].as<bool>() : hydroControl.isPhEnabled();
+        
+        hydroControl.setPhTarget(target, tol);
+        hydroControl.enableAutomation(en, hydroControl.isEcEnabled());
+        hydroControl.saveConfig();
+    } 
+    else if (strcmp(parameter, "ec") == 0) {
+        float target = doc.containsKey("target") ? doc["target"].as<float>() : hydroControl.getEcTarget();
+        float tol = doc.containsKey("tolerance") ? doc["tolerance"].as<float>() : hydroControl.getEcTolerance();
+        bool en = doc.containsKey("enabled") ? doc["enabled"].as<bool>() : hydroControl.isEcEnabled();
+        
+        hydroControl.setEcTarget(target, tol);
+        hydroControl.enableAutomation(hydroControl.isPhEnabled(), en);
+        hydroControl.saveConfig();
+    }
+    
+    server.sendHeader("Access-Control-Allow-Origin", "*");
+    server.send(200, "application/json", "{\"status\":\"ok\"}");
 }
 
 void setup() {
@@ -157,6 +234,8 @@ void setup() {
     // --- API Endpoints ---
     server.on("/api/state", HTTP_GET, handleApiState);
     server.on("/api/config", HTTP_GET, handleApiConfig);
+    server.on("/api/config/parameter", HTTP_POST, handleApiConfigParameter);
+    server.on("/api/config/parameter", HTTP_OPTIONS, handleApiConfigParameter);
 
     // Serve the frontend explicitly because serveStatic has a bug with index.html
     server.on("/", HTTP_GET, []() {

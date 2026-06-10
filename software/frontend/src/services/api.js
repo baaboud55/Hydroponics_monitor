@@ -43,8 +43,10 @@ export const api = {
 
     // Toggle automation for a parameter
     toggleAutomation: async (parameter, enabled) => {
-        const response = await fetch(`${API_BASE_URL}/api/config/automation/${parameter}/${enabled}`, {
-            method: 'POST'
+        const response = await fetch(`${API_BASE_URL}/api/config/parameter`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ parameter, enabled })
         });
         if (!response.ok) throw new Error('Failed to toggle automation');
         return await response.json();

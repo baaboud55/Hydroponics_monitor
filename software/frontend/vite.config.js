@@ -10,6 +10,13 @@ export default defineConfig({
     build: {
         outDir: '../../firmware/data',  // Output to PlatformIO LittleFS data dir
         emptyOutDir: true,
+        rollupOptions: {
+            output: {
+                entryFileNames: 'a/[hash:8].js',
+                chunkFileNames: 'a/[hash:8].js',
+                assetFileNames: 'a/[hash:8].[ext]'
+            }
+        }
     },
     plugins: [
         react(),

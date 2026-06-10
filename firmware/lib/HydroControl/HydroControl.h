@@ -64,6 +64,17 @@ public:
     // Manual
     void resetControllers();
 
+    float getPhTarget() const { return _ph_target; }
+    float getPhTolerance() const { return _ph_tolerance; }
+    bool isPhEnabled() const { return _ph_enabled; }
+    
+    float getEcTarget() const { return _ec_target; }
+    float getEcTolerance() const { return _ec_tolerance; }
+    bool isEcEnabled() const { return _ec_enabled; }
+    
+    void loadConfig();
+    void saveConfig();
+
 private:
     HydroSensors& _sensors;
     HydroDosingPumps& _pumps;

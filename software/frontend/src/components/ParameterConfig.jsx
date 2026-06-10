@@ -22,9 +22,23 @@ export default function ParameterConfig({ systemData }) {
     const loadConfig = async () => {
         try {
             const data = await api.getConfig();
+            
+            // Map ESP32 payload structure if present
+            const phConfig = data.targets ? { 
+                target: data.targets.ph, 
+                tolerance: data.tolerances?.ph ?? 0.2, 
+                enabled: data.automation_enabled?.ph ?? false 
+            } : (data.ph || {});
+            
+            const ecConfig = data.targets ? { 
+                target: data.targets.ec, 
+                tolerance: data.tolerances?.ec ?? 0.1, 
+                enabled: data.automation_enabled?.ec ?? false 
+            } : (data.ec || {});
+
             setConfig(prev => ({
-                ph: { ...prev.ph, ...(data.ph || {}) },
-                ec: { ...prev.ec, ...(data.ec || {}) },
+                ph: { ...prev.ph, ...phConfig },
+                ec: { ...prev.ec, ...ecConfig },
                 do: { ...prev.do, ...(data.do || {}) }
             }));
         } catch (error) {
