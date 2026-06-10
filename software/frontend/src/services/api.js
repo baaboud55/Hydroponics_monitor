@@ -1,7 +1,11 @@
 // API Service for Backend Communication
 const hostname = window.location.hostname;
-const isOffDevice = hostname === 'localhost' || hostname === '127.0.0.1' || hostname.includes('github.io');
-const API_BASE_URL = isOffDevice ? 'http://hydromonitor.local' : '';
+const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+const isGithubPages = hostname.includes('github.io');
+
+// When developing locally, point to the local Python backend.
+// When on github pages, point to the ESP32 (or change as needed).
+const API_BASE_URL = isLocalhost ? 'http://localhost:8000' : (isGithubPages ? 'http://hydromonitor.local' : '');
 
 export const api = {
     // Get current system state

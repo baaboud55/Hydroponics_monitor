@@ -49,10 +49,12 @@ export function useWebSocket() {
  */
 export function useBackendAPI() {
     // Auto-detect if we are running off-device (e.g. dev server, github pages)
-    // and point to the ESP32 IP/hostname instead of relative paths.
     const hostname = window.location.hostname;
-    const isOffDevice = hostname === 'localhost' || hostname === '127.0.0.1' || hostname.includes('github.io');
-    const baseURL = isOffDevice ? 'http://hydromonitor.local' : '';
+    const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+    const isGithubPages = hostname.includes('github.io');
+    
+    // When developing locally, point to the local Python backend.
+    const baseURL = isLocalhost ? 'http://localhost:8000' : (isGithubPages ? 'http://hydromonitor.local' : '');
 
     const manualDose = async (pumpIndex, durationMs) => {
         try {
