@@ -7,17 +7,23 @@
 // Specify DHT Type
 #define DHTTYPE DHT21 // AM2301 is compatible with DHT21
 
-HydroSensors::HydroSensors(uint8_t oneWirePin, uint8_t dhtPin, uint8_t waterLevelPin, uint8_t currentPin, uint8_t phPin, uint8_t ecPin)
-    : _oneWirePin(oneWirePin), 
-      _dhtPin(dhtPin), 
-      _waterLevelPin(waterLevelPin), 
-      _currentPin(currentPin),
-      _phPin(phPin),
-      _ecPin(ecPin),
-      _oneWire(oneWirePin),
+HydroSensors::HydroSensors(int ds18b20Pin, int dhtPin, int waterLevelPin, int currentPin, int phPin, int ecPin, int ecMGatePin, int ecPGatePin)
+    : _oneWire(ds18b20Pin),
       _ds18b20(&_oneWire),
       _dht(dhtPin, DHTTYPE) 
 {
+    _oneWirePin = ds18b20Pin;
+    _dhtPin = dhtPin;
+    _waterLevelPin = waterLevelPin;
+    _currentPin = currentPin;
+    _phPin = phPin;
+    _ecPin = ecPin;
+    _ecMGatePin = ecMGatePin;
+    _ecPGatePin = ecPGatePin;
+    
+    _lastEcSum = 0;
+    _lastEcV = 0;
+    _lastEcR = 0;
     _waterTemp = 0.0;
     _airTemp = 0.0;
     _humidity = 0.0;
@@ -177,19 +183,63 @@ void HydroSensors::_readPH() {
 }
 
 void HydroSensors::_readEC() {
-    // Read raw analog value (0-4095)
-    int rawVal = analogRead(_ecPin);
+    if (_ecMGatePin == -1 || _ecPGatePin == -1) {
+        // Fallback for simple analog boards
+        int rawVal = analogRead(_ecPin);
+        float voltage = (rawVal / 4095.0) * 3.3;
+        _lastEcVoltage = (0.1 * voltage) + (0.9 * _lastEcVoltage);
+        float calculated_ec = (_lastEcVoltage - _ecIntercept) * _ecSlope;
+        if (calculated_ec < 0) calculated_ec = 0;
+        _ec = calculated_ec;
+        return;
+    }
+
+    // Hydromisc advanced AC excitation logic
+    const int nEc = 32;
+    int sum = 0;
+
+    for(int i = 0; i < nEc; i++) {
+        digitalWrite(_ecMGatePin, HIGH);
+        delayMicroseconds(10);
+        sum += analogRead(_ecPin);
+        delayMicroseconds(90);
+        
+        digitalWrite(_ecMGatePin, LOW);
+        digitalWrite(_ecPGatePin, HIGH);
+        delayMicroseconds(10);
+        (void)analogRead(_ecPin); // Dummy read for timing balance
+        delayMicroseconds(90);
+        
+        digitalWrite(_ecPGatePin, LOW);
+    }
+
+    // Calculate resistance based on voltage divider with 1k resistor pulled to 3.3V
+    float avgRaw = sum / (float)nEc;
+    float V = (avgRaw / 4095.0) * 3.3; 
+    float A = V / 3.3;
     
-    // Voltage
-    float voltage = (rawVal / 4095.0) * 3.3;
+    // Avoid divide by zero if A is exactly 1.0
+    if (A >= 0.999) A = 0.999;
     
-    // EWMA Smoothing on the voltage directly
-    _lastEcVoltage = (0.1 * voltage) + (0.9 * _lastEcVoltage);
+    float R = 1000.0 * A / (1.0 - A);
     
-    // y = mx + b
-    float calculated_ec = (_lastEcVoltage - _ecIntercept) * _ecSlope;
+    _lastEcSum = sum;
+    _lastEcV = V;
+    _lastEcR = R;
+    
+    // Resistance to Conductivity (mS/cm). 
+    // 1000 / R = mS/cm.
+    float calculated_ec = 0.0;
+    if (R > 0 && R < 100000.0) { // Valid resistance bounds
+        calculated_ec = 1000.0 / R;
+        // Apply calibration slope/intercept (normally slope=1.0, intercept=0)
+        calculated_ec = (calculated_ec - _ecIntercept) * _ecSlope;
+    }
+    
     if (calculated_ec < 0) calculated_ec = 0;
-    _ec = calculated_ec;
+    
+    // EWMA filter
+    _ec = (0.2 * calculated_ec) + (0.8 * _ec);
 }
 
 float HydroSensors::getWaterTemp() {

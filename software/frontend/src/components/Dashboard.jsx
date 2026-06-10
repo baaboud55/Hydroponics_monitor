@@ -28,14 +28,14 @@ export default function Dashboard({ systemData, isConnected }) {
             {
                 type: 'temp',
                 label: t('waterTempLabel'),
-                value: data?.water_temp?.toFixed(1) ?? '--',
+                value: (data?.water_temp ?? data?.waterTemp)?.toFixed(1) ?? '--',
                 unit: '°C',
                 status: 'normal'
             },
             {
                 type: 'water',
                 label: t('resLevel'),
-                value: data?.water_level?.toString() ?? '--',
+                value: (data?.water_level ?? data?.waterLevel)?.toString() ?? '--',
                 unit: '%',
                 status: 'normal'
             },
@@ -44,7 +44,7 @@ export default function Dashboard({ systemData, isConnected }) {
             {
                 type: 'air_temp',
                 label: t('airTemp'),
-                value: data?.air_temp?.toFixed(1) ?? '--',
+                value: (data?.air_temp ?? data?.airTemp)?.toFixed(1) ?? '--',
                 unit: '°C',
                 status: 'normal'
             },
@@ -74,7 +74,7 @@ export default function Dashboard({ systemData, isConnected }) {
             {
                 type: 'power',
                 label: t('pumpCurrent'),
-                value: data?.power_current?.toFixed(1) ?? '--',
+                value: (data?.power_current ?? data?.pumpState)?.toFixed(1) ?? '--',
                 unit: 'A',
                 status: 'normal'
             },

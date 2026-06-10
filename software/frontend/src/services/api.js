@@ -1,5 +1,7 @@
 // API Service for Backend Communication
-const API_BASE_URL = ``;
+const hostname = window.location.hostname;
+const isOffDevice = hostname === 'localhost' || hostname === '127.0.0.1' || hostname.includes('github.io');
+const API_BASE_URL = isOffDevice ? 'http://hydromonitor.local' : '';
 
 export const api = {
     // Get current system state

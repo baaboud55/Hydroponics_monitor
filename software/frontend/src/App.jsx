@@ -33,6 +33,9 @@ function App() {
     
     const [selectedPlant, setSelectedPlant] = useState(null);
 
+    // Single WebSocket connection shared across all components
+    const { data: systemData, isConnected } = useWebSocket();
+
     // Synchronize selected crop with the Python Backend (Single Source of Truth)
     useEffect(() => {
         if (systemData) {
@@ -50,9 +53,6 @@ function App() {
         }
     }, [systemData, selectedPlant]);
     const [activeTab, setActiveTab] = useState('dashboard');
-
-    // Single WebSocket connection shared across all components
-    const { data: systemData, isConnected } = useWebSocket();
 
     const tabs = [
         { id: 'dashboard', label: t('tabDashboard'), icon: Home },

@@ -9,7 +9,7 @@
 
 class HydroSensors {
 public:
-    HydroSensors(uint8_t oneWirePin, uint8_t dhtPin, uint8_t waterLevelPin, uint8_t currentPin, uint8_t phPin, uint8_t ecPin);
+    HydroSensors(int ds18b20Pin, int dhtPin, int waterLevelPin, int currentPin, int phPin, int ecPin, int ecMGatePin = -1, int ecPGatePin = -1);
     
     void begin();
     void update(); // Should be called periodically in loop() to refresh non-blocking sensors
@@ -22,6 +22,12 @@ public:
     float getDO();
     float getPH();
     float getEC();
+    int getWaterLevel();
+    
+    // Debug
+    float getLastEcR() { return _lastEcR; }
+    float getLastEcV() { return _lastEcV; }
+    float getLastEcSum() { return _lastEcSum; }
     
     // Returns true if water level is OK, false if LOW/Empty
     bool isWaterLevelOk();
@@ -30,12 +36,14 @@ public:
     void processCalibration(String sensor, String command);
 
 private:
-    uint8_t _oneWirePin;
-    uint8_t _dhtPin;
-    uint8_t _waterLevelPin;
-    uint8_t _currentPin;
-    uint8_t _phPin;
-    uint8_t _ecPin;
+    int _oneWirePin;
+    int _dhtPin;
+    int _waterLevelPin;
+    int _currentPin;
+    int _phPin;
+    int _ecPin;
+    int _ecMGatePin;
+    int _ecPGatePin;
 
     OneWire _oneWire;
     DallasTemperature _ds18b20;
@@ -59,6 +67,11 @@ private:
     float _ecIntercept; // Voltage in dry air
     float _ecSlope;     // mS/cm per Volt
     float _lastEcVoltage;
+    
+    // Debug variables
+    float _lastEcR;
+    float _lastEcV;
+    float _lastEcSum;
     
     unsigned long _lastDhtRead;
     unsigned long _lastDs18b20Read;

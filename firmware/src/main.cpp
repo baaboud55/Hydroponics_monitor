@@ -33,12 +33,13 @@
 #define PIN_SENSOR_CURRENT 35
 // pH Probe on pH BNC #0
 #define PIN_SENSOR_PH 36
-// EC Probe on pH BNC #1 (EC probe plugged into second pH BNC connector)
-#define PIN_SENSOR_EC 39
+#define PIN_SENSOR_EC 34 // EC_0 is on pin 34
+#define PIN_EC_M_GATE 25
+#define PIN_EC_P_GATE 15
 
 HydroActuators actuators(PIN_SR_DATA, PIN_SR_CLOCK, PIN_SR_LATCH, PIN_SR_CLEAR);
 HydroDosingPumps dosingPumps(PIN_DOSING_A, PIN_DOSING_B, PIN_DOSING_PH, PIN_DOSING_AUX);
-HydroSensors sensors(PIN_SENSOR_DS18B20, PIN_SENSOR_DHT, PIN_SENSOR_LEVEL, PIN_SENSOR_CURRENT, PIN_SENSOR_PH, PIN_SENSOR_EC);
+HydroSensors sensors(PIN_SENSOR_DS18B20, PIN_SENSOR_DHT, PIN_SENSOR_LEVEL, PIN_SENSOR_CURRENT, PIN_SENSOR_PH, PIN_SENSOR_EC, PIN_EC_M_GATE, PIN_EC_P_GATE);
 
 HydroControl hydroControl(sensors, dosingPumps);
 WebServer server(80);
@@ -48,11 +49,16 @@ void handleApiState() {
     StaticJsonDocument<512> doc;
     doc["ph"] = sensors.getPH();
     doc["ec"] = sensors.getEC();
-    doc["water_temp"] = sensors.getWaterTemp();
-    doc["air_temp"] = sensors.getAirTemp();
+    doc["waterTemp"] = sensors.getWaterTemp();
+    doc["airTemp"] = sensors.getAirTemp();
     doc["humidity"] = sensors.getHumidity();
-    doc["power_current"] = sensors.getCurrent();
-    doc["water_level"] = sensors.isWaterLevelOk() ? 100 : 0;
+    doc["waterLevel"] = sensors.isWaterLevelOk() ? 100 : 0;
+    doc["pumpState"] = 0; // TODO: Implement pump state getter if needed
+    
+    // Debug variables
+    doc["ec_R"] = sensors.getLastEcR();
+    doc["ec_V"] = sensors.getLastEcV();
+    doc["ec_sum"] = sensors.getLastEcSum();
     
     // Pump statuses
     JsonArray pumps = doc.createNestedArray("pumps");

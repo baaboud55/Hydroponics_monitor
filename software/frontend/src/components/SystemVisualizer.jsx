@@ -16,10 +16,10 @@ export default function SystemVisualizer({ plant, onBack, onTechView, systemData
         return () => clearInterval(interval);
     }, []);
 
-    // Current sensor values from ESP32
+    // Current sensor values from ESP32 or Python Backend
     const currentPh = systemData?.ph?.toFixed(1) || '--';
     const currentEc = systemData?.ec?.toFixed(1) || '--';
-    const currentTemp = systemData?.water_temp?.toFixed(1) || '--';
+    const currentTemp = (systemData?.water_temp ?? systemData?.waterTemp)?.toFixed(1) || '--';
 
     return (
         <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col relative overflow-hidden font-sans">
