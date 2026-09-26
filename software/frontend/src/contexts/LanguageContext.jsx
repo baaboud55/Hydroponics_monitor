@@ -106,6 +106,7 @@ const translations = {
         tabDashboard: "Tech Dashboard",
         tabAutomation: "Automation rules",
         tabConfig: "Parameter config",
+        tabHistory: "Historical Data",
         backToVisualizer: "Back to Visualizer",
         systemOnlineRaw: "System Online",
         connecting: "Connecting...",
@@ -163,6 +164,19 @@ const translations = {
         pumpB: "Pump B",
         phUpDown: "pH Up/Down",
         auxPump: "Aux",
+        
+        // History
+        historyTitle: "Historical Data",
+        historyDesc: "View parameter trends over time",
+        last24h: "Last 24h",
+        last7d: "Last 7 Days",
+        last30d: "Last 30 Days",
+        customRange: "Custom",
+        startDate: "Start Date",
+        endDate: "End Date",
+        loadHistory: "Load Data",
+        loading: "Loading...",
+        noData: "No historical data available",
         
         // Calibration Wizard
         calWizardTitle: "Calibration Wizard",
@@ -298,6 +312,7 @@ const translations = {
         tabDashboard: "لوحة التحكم التقنية",
         tabAutomation: "قواعد الأتمتة",
         tabConfig: "إعدادات المعايير",
+        tabHistory: "السجل التاريخي",
         backToVisualizer: "العودة للمراقب المرئي",
         systemOnlineRaw: "النظام متصل",
         connecting: "جاري الاتصال...",
@@ -355,6 +370,19 @@ const translations = {
         pumpB: "مضخة B",
         phUpDown: "رافع/خافض الحموضة",
         auxPump: "مضخة إضافية",
+
+        // History
+        historyTitle: "السجل التاريخي",
+        historyDesc: "عرض اتجاهات المعايير بمرور الوقت",
+        last24h: "آخر 24 ساعة",
+        last7d: "آخر 7 أيام",
+        last30d: "آخر 30 يوم",
+        customRange: "مخصص",
+        startDate: "تاريخ البدء",
+        endDate: "تاريخ الانتهاء",
+        loadHistory: "تحميل البيانات",
+        loading: "جاري التحميل...",
+        noData: "لا توجد بيانات تاريخية متاحة",
 
         // Calibration Wizard
         calWizardTitle: "معالج المعايرة",

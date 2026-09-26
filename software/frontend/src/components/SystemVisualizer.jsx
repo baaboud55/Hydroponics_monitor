@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Settings, ArrowLeft, Droplets, Activity, Thermometer, FlaskConical } from 'lucide-react';
+import { Settings, ArrowLeft, Droplets, Activity, Thermometer, FlaskConical, BarChart2, X, AlertTriangle } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import HistoricalData from './HistoricalData';
+import { isGithubPages } from '../services/api';
 
 export default function SystemVisualizer({ plant, onBack, onTechView, systemData, isConnected }) {
     const { t } = useLanguage();
     const [dosing, setDosing] = useState(null);
+    const [showHistory, setShowHistory] = useState(false);
 
     // Simulate dosing animation periodically based on "live" data simulation
     useEffect(() => {
@@ -43,13 +46,28 @@ export default function SystemVisualizer({ plant, onBack, onTechView, systemData
                         <Settings className="w-5 h-5" />
                         <span className="font-medium hidden sm:inline">Hub / Settings</span>
                     </button>
+                    <button
+                        onClick={() => setShowHistory(true)}
+                        className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors px-3 py-1.5 rounded-full hover:bg-slate-800"
+                    >
+                        <BarChart2 className="w-5 h-5" />
+                        <span className="font-medium hidden sm:inline">{t('historyTitle') || 'History'}</span>
+                    </button>
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-800/80 border border-slate-700">
-                        <span className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)] animate-pulse' : 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]'}`}></span>
-                        <span className="text-sm font-medium tracking-wide">{isConnected ? t('systemOnline') : 'Connecting...'} </span>
-                    </div>
+                    {isGithubPages ? (
+                        <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-800/80 border border-slate-700">
+                            <AlertTriangle className="w-4 h-4 text-orange-500" />
+                            <span className="w-2.5 h-2.5 rounded-full bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.8)] animate-pulse"></span>
+                            <span className="text-sm font-medium tracking-wide text-orange-400">Live Demo Mode</span>
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-800/80 border border-slate-700">
+                            <span className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)] animate-pulse' : 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]'}`}></span>
+                            <span className="text-sm font-medium tracking-wide">{isConnected ? t('systemOnline') : 'Connecting...'} </span>
+                        </div>
+                    )}
                 </div>
             </header>
 
@@ -107,17 +125,17 @@ export default function SystemVisualizer({ plant, onBack, onTechView, systemData
                                     <div className="absolute bottom-0 w-full h-full bg-gradient-to-t from-blue-600/30 to-transparent mix-blend-screen"></div>
 
                                     {/* Bubbles */}
-                                    {[...Array(8)].map((_, i) => (
+                                    {React.useMemo(() => [...Array(8)].map(() => ({
+                                        left: `${10 + Math.random() * 80}%`,
+                                        width: `${4 + Math.random() * 6}px`,
+                                        height: `${4 + Math.random() * 6}px`,
+                                        animationDuration: `${2 + Math.random() * 2}s`,
+                                        animationDelay: `${Math.random() * 2}s`
+                                    })), []).map((bubbleStyle, i) => (
                                         <div
                                             key={i}
                                             className="absolute bottom-0 bg-white/20 rounded-full animate-bubble"
-                                            style={{
-                                                left: `${10 + Math.random() * 80}%`,
-                                                width: `${4 + Math.random() * 6}px`,
-                                                height: `${4 + Math.random() * 6}px`,
-                                                animationDuration: `${2 + Math.random() * 2}s`,
-                                                animationDelay: `${Math.random() * 2}s`
-                                            }}
+                                            style={bubbleStyle}
                                         ></div>
                                     ))}
                                 </div>
@@ -260,6 +278,23 @@ export default function SystemVisualizer({ plant, onBack, onTechView, systemData
                 .animate-flow { animation: flow 1s infinite linear; }
                 .animate-bubble { animation: bubble 3s infinite linear; }
             `}</style>
+            
+            {/* History Modal Overlay */}
+            {showHistory && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center p-4 sm:p-8 bg-slate-950/80 backdrop-blur-sm hero-entrance">
+                    <div className="w-full max-w-5xl max-h-full flex flex-col bg-slate-900 border border-slate-700 rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden relative">
+                        <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/50">
+                            <h2 className="text-xl font-bold text-white flex items-center gap-2"><BarChart2 className="w-6 h-6 text-emerald-400"/> {t('historyTitle') || 'History'}</h2>
+                            <button onClick={() => setShowHistory(false)} className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition-colors">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-950/30">
+                            <HistoricalData theme="dark" />
+                        </div>
+                    </div>
+                </div>
+            )}
         </div >
     );
 }

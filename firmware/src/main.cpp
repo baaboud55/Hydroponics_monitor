@@ -1,15 +1,20 @@
 #include <Arduino.h>
 #include <WiFi.h>
+#include <HTTPClient.h>
+#include <SPIFFS.h>
 #include <WiFiManager.h>
 #include <WebServer.h>
 #include <LittleFS.h>
 #include <ArduinoJson.h>
 #include <ESPmDNS.h>
 #include <ArduinoOTA.h>
-#include <HTTPUpdateServer.h>
+#include <ElegantOTA.h>
 #include <WiFiClientSecure.h>
 #include <ArduinoWebsockets.h>
+#include <HTTPUpdate.h>
 #include <uri/UriBraces.h>
+
+#define CLOUD_HUB_URL "http://192.168.1.100:8000"
 #include <HydroActuators.h>
 #include <HydroSensors.h>
 #include <HydroDosingPumps.h>
@@ -47,7 +52,7 @@ HydroSensors sensors(PIN_SENSOR_DS18B20, PIN_SENSOR_DHT, PIN_SENSOR_LEVEL, PIN_S
 
 HydroControl hydroControl(sensors, dosingPumps);
 WebServer server(80);
-HTTPUpdateServer httpUpdater;
+
 
 using namespace websockets;
 WebsocketsServer webSocket;
@@ -179,6 +184,63 @@ void handleApiConfigParameter() {
     server.send(200, "application/json", "{\"status\":\"ok\"}");
 }
 
+void postTelemetryToCloud() {
+    if (WiFi.status() == WL_CONNECTED) {
+        WiFiClient client;
+        HTTPClient http;
+        http.begin(client, CLOUD_HUB_URL "/api/telemetry/report");
+        http.addHeader("Content-Type", "application/json");
+        
+        String payload = getApiStateJson();
+        int httpResponseCode = http.POST(payload);
+        
+        if (httpResponseCode > 0) {
+            Serial.printf("Telemetry POST success: %d\n", httpResponseCode);
+        } else {
+            Serial.printf("Telemetry POST failed: %s\n", http.errorToString(httpResponseCode).c_str());
+        }
+        http.end();
+    }
+}
+
+void checkForFirmwareUpdates() {
+    if (WiFi.status() == WL_CONNECTED) {
+        WiFiClient client;
+        HTTPClient http;
+        http.begin(client, CLOUD_HUB_URL "/api/firmware/check");
+        int httpResponseCode = http.GET();
+        
+        if (httpResponseCode == 200) {
+            String payload = http.getString();
+            StaticJsonDocument<512> doc;
+            DeserializationError error = deserializeJson(doc, payload);
+            
+            if (!error && doc.containsKey("url")) {
+                String updateUrl = doc["url"].as<String>();
+                Serial.println("New firmware found! Updating from: " + updateUrl);
+                
+                t_httpUpdate_return ret = httpUpdate.update(client, updateUrl);
+                switch (ret) {
+                    case HTTP_UPDATE_FAILED:
+                        Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
+                        break;
+                    case HTTP_UPDATE_NO_UPDATES:
+                        Serial.println("HTTP_UPDATE_NO_UPDATES");
+                        break;
+                    case HTTP_UPDATE_OK:
+                        Serial.println("HTTP_UPDATE_OK");
+                        break;
+                }
+            } else {
+                Serial.println("No update url found or JSON invalid");
+            }
+        } else {
+            Serial.printf("Firmware check GET failed: %s\n", http.errorToString(httpResponseCode).c_str());
+        }
+        http.end();
+    }
+}
+
 void setup() {
     Serial.begin(115200);
     Serial.println("\n\nHydroponic Standalone System - Booting...");
@@ -220,6 +282,10 @@ void setup() {
             type = "sketch";
         } else { // U_SPIFFS / U_LITTLEFS
             type = "filesystem";
+            Serial.println("Start updating filesystem");
+            server.stop();
+            // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
+            LittleFS.end();
         }
         Serial.println("Start updating " + type);
     });
@@ -239,8 +305,7 @@ void setup() {
     });
     ArduinoOTA.begin();
 
-    // Setup HTTP Web Updater on /update
-    httpUpdater.setup(&server, "/update");
+    ElegantOTA.begin(&server);    // Start ElegantOTA
 
     // --- WebSockets ---
     webSocket.listen(81);
@@ -301,7 +366,8 @@ void setup() {
         deserializeJson(doc, server.arg("plain"));
         int pump_index = doc["pump_index"];
         int duration_ms = doc["duration_ms"];
-        dosingPumps.dose(pump_index, duration_ms);
+        int speed = doc.containsKey("speed") ? doc["speed"].as<int>() : 100;
+        dosingPumps.dose(pump_index, duration_ms, speed);
         server.sendHeader("Access-Control-Allow-Origin", "*");
         server.send(200, "application/json", "{\"status\":\"ok\"}");
     });
@@ -334,6 +400,11 @@ void setup() {
     server.on("/api/dosing/history", HTTP_GET, []() {
         server.sendHeader("Access-Control-Allow-Origin", "*");
         server.send(200, "application/json", "{\"history\":[]}");
+    });
+
+    server.on("/api/history", HTTP_GET, []() {
+        server.sendHeader("Access-Control-Allow-Origin", "*");
+        server.send(200, "application/json", "[]");
     });
 
     // Serve the frontend explicitly because serveStatic has a bug with index.html
@@ -379,9 +450,11 @@ void loop() {
     if (!sensors.isWaterLevelOk()) {
         actuators.setPump(0, false);
         actuators.commit();
-    } else {
-        dosingPumps.update();
+        dosingPumps.stopAll(); // EMERGENCY STOP
     }
+    
+    // Always update dosing pumps so timers can run and stop pumps safely
+    dosingPumps.update();
 
     sensors.update();
     hydroControl.update(); // Run autonomous PID loop
@@ -399,5 +472,17 @@ void loop() {
         for (auto& client : wsClients) {
             client.send(json);
         }
+    }
+
+    static unsigned long lastTelemetryTime = 0;
+    if (millis() - lastTelemetryTime > 60000) {
+        lastTelemetryTime = millis();
+        postTelemetryToCloud();
+    }
+
+    static unsigned long lastFirmwareCheck = 0;
+    if (millis() - lastFirmwareCheck > 600000) {
+        lastFirmwareCheck = millis();
+        checkForFirmwareUpdates();
     }
 }

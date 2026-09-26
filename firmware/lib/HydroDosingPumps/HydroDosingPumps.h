@@ -11,8 +11,8 @@ public:
     // Continuous speed control (0-100%)
     void setSpeed(uint8_t index, uint8_t speed);
     
-    // Timed dosing - run pump for duration (milliseconds)
-    void dose(uint8_t index, unsigned long duration);
+    // Timed dosing - run pump for duration (milliseconds) at specified speed (0-100)
+    void dose(uint8_t index, unsigned long duration, uint8_t speed = 100);
     
     // Stop specific pump
     void stop(uint8_t index);
@@ -37,7 +37,7 @@ private:
     
     void _setPWM(uint8_t index, uint8_t dutyCycle);
     
-    static const int PWM_FREQ = 1000;      // 1 kHz
+    static const int PWM_FREQ = 30000;     // 30 kHz for RC filter analog voltage control
     static const int PWM_RESOLUTION = 8;   // 8-bit (0-255)
 };
 

@@ -1,7 +1,7 @@
 // API Service for Backend Communication
 const hostname = window.location.hostname;
 const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
-const isGithubPages = hostname.includes('github.io');
+export const isGithubPages = hostname.includes('github.io');
 
 // When developing locally, point to the local Python backend.
 // When on github pages, point to the ESP32 (or change as needed).
@@ -58,12 +58,26 @@ export const api = {
         return await response.json();
     },
 
+    // Get historical data
+    getHistory: async (startTime, endTime) => {
+        let url = `${API_BASE_URL}/api/history`;
+        const params = new URLSearchParams();
+        if (startTime) params.append('start_time', startTime);
+        if (endTime) params.append('end_time', endTime);
+        if (params.toString()) {
+            url += `?${params.toString()}`;
+        }
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Failed to fetch history');
+        return await response.json();
+    },
+
     // Manual dosing
-    manualDose: async (pumpIndex, durationMs) => {
+    manualDose: async (pumpIndex, durationMs, speed = 100) => {
         const response = await fetch(`${API_BASE_URL}/api/dosing/manual`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pump_index: pumpIndex, duration_ms: durationMs })
+            body: JSON.stringify({ pump_index: pumpIndex, duration_ms: durationMs, speed: speed })
         });
         if (!response.ok) throw new Error('Failed to trigger manual dose');
         return await response.json();

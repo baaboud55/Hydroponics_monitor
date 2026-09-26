@@ -1,10 +1,12 @@
-from fastapi import FastAPI, WebSocket, HTTPException
+from fastapi import FastAPI, WebSocket, HTTPException, Request
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import json
 import asyncio
 import math
 import os
+from datetime import datetime, timezone
 import paho.mqtt.client as mqtt
 from contextlib import asynccontextmanager
 from typing import Dict, Any, Optional, List
@@ -148,6 +150,10 @@ async def lifespan(app: FastAPI):
     asyncio.create_task(control_loop())
     print("Autonomous control loop started")
 
+    # Startup: launch telemetry logger loop
+    asyncio.create_task(telemetry_logger_loop())
+    print("Telemetry logger loop started")
+
     if MQTT_ENABLED:
         # Real MQTT mode — data comes from mock_device.py or actual hardware
         try:
@@ -204,10 +210,19 @@ class ConfigUpdate(BaseModel):
 class ManualDoseRequest(BaseModel):
     pump_index: int  # 0-3
     duration_ms: int  # milliseconds
+    speed: int = 100  # 0-100%
 
 class CalibrationRequest(BaseModel):
     sensor: str  # 'ph', 'ec', 'do'
     command: str # Payload for the request, e.g. "Cal,atm"
+
+class TelemetryReport(BaseModel):
+    ph: Optional[float] = None
+    ec: Optional[float] = None
+    water_temp: Optional[float] = None
+    air_temp: Optional[float] = None
+    humidity: Optional[float] = None
+    water_level: Optional[float] = None
 
 # Configuration endpoints
 @app.get("/api/config")
@@ -277,16 +292,55 @@ def get_dosing_history(limit: int = 50):
     """Get recent dosing history"""
     return {"history": dosing_engine.get_history(limit)}
 
+@app.get("/api/history")
+def get_history(start_time: str, end_time: str):
+    """Get historical telemetry data"""
+    return {"history": database.get_telemetry_history(start_time, end_time)}
+
+@app.post("/api/telemetry/report")
+def report_telemetry(report: TelemetryReport):
+    """Log telemetry from remote ESP32s"""
+    timestamp = datetime.now(timezone.utc).isoformat()
+    database.log_telemetry(
+        timestamp=timestamp,
+        ph=report.ph,
+        ec=report.ec,
+        water_temp=report.water_temp,
+        air_temp=report.air_temp,
+        humidity=report.humidity,
+        water_level=report.water_level
+    )
+    return {"status": "ok"}
+
+@app.get("/api/firmware/check")
+def check_firmware(request: Request):
+    """Check for firmware updates"""
+    base_url = str(request.base_url).rstrip('/')
+    return {
+        "version": "2.0.0",
+        "url": f"{base_url}/api/firmware/download/2.0.0"
+    }
+
+@app.get("/api/firmware/download/{version}")
+def download_firmware(version: str):
+    """Download firmware binary"""
+    firmware_path = os.path.join(os.path.dirname(__file__), "firmware_files", "firmware.bin")
+    if not os.path.exists(firmware_path):
+        raise HTTPException(status_code=404, detail="Firmware not found")
+    return FileResponse(firmware_path, media_type="application/octet-stream", filename=f"firmware_{version}.bin")
+
 @app.post("/api/dosing/manual")
 def manual_dose(request: ManualDoseRequest):
     """Manually trigger a dosing action"""
     topic = f"hydro/{config_mgr.config.mqtt['device_id']}/control/dosing/{request.pump_index}/dose"
-    client.publish(topic, str(request.duration_ms))
-    print(f"Manual dose command: pump={request.pump_index} duration={request.duration_ms}ms")
+    payload = json.dumps({"duration_ms": request.duration_ms, "speed": request.speed})
+    client.publish(topic, payload)
+    print(f"Manual dose command: pump={request.pump_index} duration={request.duration_ms}ms speed={request.speed}%")
     return {
         "status": "command_sent",
         "pump": request.pump_index,
-        "duration_ms": request.duration_ms
+        "duration_ms": request.duration_ms,
+        "speed": request.speed
     }
 
 @app.post("/api/dosing/reset")
@@ -386,6 +440,25 @@ async def control_loop():
             print(f"Error in control loop: {e}")
 
         await asyncio.sleep(5)
+
+async def telemetry_logger_loop():
+    """Background task to periodically log telemetry to database."""
+    while True:
+        try:
+            timestamp = datetime.now(timezone.utc).isoformat()
+            database.log_telemetry(
+                timestamp=timestamp,
+                ph=system_state.get("ph"),
+                ec=system_state.get("ec"),
+                water_temp=system_state.get("water_temp"),
+                air_temp=system_state.get("air_temp"),
+                humidity=system_state.get("humidity"),
+                water_level=system_state.get("water_level")
+            )
+        except Exception as e:
+            print(f"Error logging telemetry: {e}")
+        
+        await asyncio.sleep(300)  # every 5 minutes
 
 
 @app.websocket("/ws")

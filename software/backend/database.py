@@ -39,6 +39,25 @@ def init_db():
                 ON dosing_history (timestamp DESC)
             ''')
             
+            # Create Telemetry History Table
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS telemetry_history (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp TEXT NOT NULL,
+                    ph REAL,
+                    ec REAL,
+                    water_temp REAL,
+                    air_temp REAL,
+                    humidity REAL,
+                    water_level REAL
+                )
+            ''')
+            
+            cursor.execute('''
+                CREATE INDEX IF NOT EXISTS idx_telemetry_history_ts 
+                ON telemetry_history (timestamp DESC)
+            ''')
+            
             conn.commit()
             logger.info(f"SQLite database initialized at {DB_PATH}")
     except Exception as e:
@@ -98,4 +117,52 @@ def get_recent_doses(limit: int = 50) -> List[Dict[str, Any]]:
             
     except Exception as e:
         logger.error(f"Failed to retrieve dosing history: {e}")
+        return []
+
+def log_telemetry(timestamp: str, ph: float, ec: float, water_temp: float, air_temp: float, humidity: float, water_level: float):
+    """Record telemetry data directly to the SQLite database."""
+    try:
+        with get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                INSERT INTO telemetry_history 
+                (timestamp, ph, ec, water_temp, air_temp, humidity, water_level)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', (timestamp, ph, ec, water_temp, air_temp, humidity, water_level))
+            conn.commit()
+    except Exception as e:
+        logger.error(f"Failed to log telemetry to database: {e}")
+
+def get_telemetry_history(start_time: str, end_time: str) -> List[Dict[str, Any]]:
+    """Retrieve telemetry history within a time range."""
+    try:
+        with get_connection() as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                SELECT * FROM telemetry_history 
+                WHERE timestamp >= ? AND timestamp <= ?
+                ORDER BY timestamp ASC
+            ''', (start_time, end_time))
+            
+            rows = cursor.fetchall()
+            
+            result = []
+            for row in rows:
+                result.append({
+                    "id": row["id"],
+                    "timestamp": row["timestamp"],
+                    "ph": row["ph"],
+                    "ec": row["ec"],
+                    "water_temp": row["water_temp"],
+                    "air_temp": row["air_temp"],
+                    "humidity": row["humidity"],
+                    "water_level": row["water_level"]
+                })
+            
+            return result
+            
+    except Exception as e:
+        logger.error(f"Failed to retrieve telemetry history: {e}")
         return []

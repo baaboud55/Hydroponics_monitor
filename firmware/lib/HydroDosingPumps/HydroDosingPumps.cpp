@@ -44,18 +44,20 @@ void HydroDosingPumps::setSpeed(uint8_t index, uint8_t speed) {
     Serial.printf("Dosing Pump %d speed set to %d%%\n", index, speed);
 }
 
-void HydroDosingPumps::dose(uint8_t index, unsigned long duration) {
+void HydroDosingPumps::dose(uint8_t index, unsigned long duration, uint8_t speed) {
     if (index > 3) return;
     if (duration == 0) return;
+    if (speed > 100) speed = 100;
     
-    // Set to 100% speed
-    _speeds[index] = 100;
-    _setPWM(index, 255);
+    // Set to requested speed
+    _speeds[index] = speed;
+    uint8_t dutyCycle = (speed * 255) / 100;
+    _setPWM(index, dutyCycle);
     
     // Set end time
     _doseEndTime[index] = millis() + duration;
     
-    Serial.printf("Dosing Pump %d: dosing for %lu ms\n", index, duration);
+    Serial.printf("Dosing Pump %d: dosing for %lu ms at %d%%\n", index, duration, speed);
 }
 
 void HydroDosingPumps::stop(uint8_t index) {

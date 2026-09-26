@@ -281,6 +281,60 @@ http://hydromonitor.local
 
 ---
 
+## 🔌 Hardware Wiring Guide (Hydromisc PCBA)
+
+The Hydromisc custom PCBA provides dedicated plug-and-play ports for all hydroponic peripherals.
+
+### PCB Layout Overview
+![Hydromisc PCBA Top View](https://raw.githubusercontent.com/hydromisc/hydromisc/master/doc/pcba-top.jpg)
+
+### Power Side (Actuators & Pumps)
+![Power Side Pinout](https://raw.githubusercontent.com/hydromisc/hydromisc/master/doc/pcba-side-power.jpg)
+
+This side handles all high-current 12V outputs. Note the varying current limits for each block:
+
+```mermaid
+flowchart LR
+    subgraph Hydromisc Power Ports
+        S[Solenoid Ports<br>8x 12V 1.0A]
+        P[Pump Ports<br>6x 12V 0.5A]
+        D[Dosing Ports<br>4x 12V 0.25A]
+    end
+    
+    WaterValve[12V Solenoid Valve] -.-> S
+    MainPump[Small Circulation Pump<br>>250mA] -.-> P
+    AirPump[12V Air Pump] -.-> P
+    DoseA[Nutrient A Doser<br><250mA] -.-> D
+    DoseB[Nutrient B Doser<br><250mA] -.-> D
+    DosePH[pH Down Doser<br><250mA] -.-> D
+```
+
+**Wiring Rules:**
+- **Solenoids (1.0A max per port):** Pure ON/OFF control for heavy-draw items like motorized ball valves or solenoid water valves.
+- **Pumps (0.5A max per port):** Features built-in current monitoring to detect dry-running. Use for circulation or air pumps. **Note:** If your dosing pumps draw more than 250mA, they *must* be connected here.
+- **Dosing Pumps (0.25A max per port):** Features analog voltage control for variable-speed, precise drop-by-drop dosing. Ensure your peristaltic pumps draw <250mA (stall current) before connecting here.
+- **Grounding Warning:** **DO NOT** bridge motor grounds together! Every motor must have its own dedicated `+` and `-` wire screwed into its designated terminal block. Bridging motor grounds forces all return current through a single thin PCB trace, which will cause the board to overheat and fail.
+
+### Sensor Side (Probes & Data)
+![Sensor Side Pinout](https://raw.githubusercontent.com/hydromisc/hydromisc/master/doc/pcba-side-sensors.jpg)
+
+```mermaid
+flowchart LR
+    subgraph Hydromisc Sensor Ports
+        BNC_PH[pH BNC Port]
+        BNC_EC[EC BNC Port]
+        DIG_0[Digital Expansion 0]
+        DIG_1[Digital Expansion 1]
+    end
+    
+    PH_Probe[Commercial pH Probe] -.-> BNC_PH
+    EC_Probe[Commercial EC Probe] -.-> BNC_EC
+    WaterTemp[DS18B20 Water Temp] -.-> DIG_0
+    AirTemp[DHT22 Air Temp/Humidity] -.-> DIG_1
+```
+
+---
+
 ## ⚙️ Configuration Reference
 
 All parameters are configurable via the dashboard **Config tab** or by editing `software/backend/config.json` directly.
@@ -438,7 +492,7 @@ We build custom embedded hardware and software solutions for automation, monitor
 ## 🛣️ Roadmap
 
 - [ ] Automated grow scheduling (day/night lighting cycles)
-- [ ] Historical charting with time-range selection
+- [x] Historical charting with time-range selection
 - [ ] Push notifications (email / Telegram) on out-of-range sensor alerts
 - [ ] Multi-zone support (multiple ESP32 devices on one backend)
 - [ ] Mobile app (React Native)

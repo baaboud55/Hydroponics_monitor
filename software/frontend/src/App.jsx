@@ -1,7 +1,7 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import PlantSelector, { PLANT_TYPES } from './components/PlantSelector';
 import SystemVisualizer from './components/SystemVisualizer';
-import { Home, Settings, Activity, Cpu, Globe } from 'lucide-react';
+import { Home, Settings, Activity, Cpu, Globe, BarChart2 } from 'lucide-react';
 import { useWebSocket } from './hooks/useWebSocket';
 import { useLanguage } from './contexts/LanguageContext';
 import { api } from './services/api';
@@ -13,6 +13,7 @@ const AutomationStatus = lazy(() => import('./components/AutomationStatus'));
 const MainMenu = lazy(() => import('./components/MainMenu'));
 const HardwareGuide = lazy(() => import('./components/HardwareGuide'));
 const CalibrationWizard = lazy(() => import('./components/CalibrationWizard'));
+const HistoricalData = lazy(() => import('./components/HistoricalData'));
 
 function App() {
     const { t, lang, toggleLanguage } = useLanguage();
@@ -53,6 +54,7 @@ function App() {
     const tabs = [
         { id: 'dashboard', label: t('tabDashboard'), icon: Home },
         { id: 'automation', label: t('tabAutomation'), icon: Activity },
+        { id: 'history', label: t('tabHistory'), icon: BarChart2 },
         { id: 'config', label: t('tabConfig'), icon: Settings }
     ];
 
@@ -164,6 +166,11 @@ function App() {
                     {activeTab === 'automation' && (
                         <div className="mx-auto px-4 py-6 w-full max-w-2xl">
                             <AutomationStatus systemData={systemData} />
+                        </div>
+                    )}
+                    {activeTab === 'history' && (
+                        <div className="mx-auto px-4 py-6 w-full max-w-4xl">
+                            <HistoricalData />
                         </div>
                     )}
                     {activeTab === 'config' && (

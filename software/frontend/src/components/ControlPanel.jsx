@@ -79,17 +79,10 @@ export default function ControlPanel({ systemData }) {
         }
     };
 
-    // Update dosing pump speed (UI only for now)
-    const updateDosingSpeed = (index, speed) => {
-        const updated = [...dosingPumps];
-        updated[index] = { ...updated[index], speed };
-        setDosingPumps(updated);
-    };
-
-    // Start timed dosing via backend
+    // Start timed dosing via backend at 100% speed
     const startDosing = async (index, duration = 5000) => {
         try {
-            await api.manualDose(index, duration);
+            await api.manualDose(index, duration, 100);
             showFeedback(`Dosing pump ${dosingPumps[index].name}: ${duration / 1000}s command sent`);
         } catch (error) {
             showFeedback(`Failed to dose ${dosingPumps[index].name}`, false);
@@ -174,28 +167,29 @@ export default function ControlPanel({ systemData }) {
                 <div className="space-y-4">
                     {dosingPumps.map((pump, index) => (
                         <div key={index} className="bg-gray-50 rounded-lg p-4">
-                            <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center justify-between mb-3">
                                 <span className="font-medium text-gray-700">{pump.name}</span>
-                                <span className="text-sm font-semibold text-purple-600">
-                                    {pump.speed}%
-                                </span>
                             </div>
-                            <input
-                                type="range"
-                                min="0"
-                                max="100"
-                                value={pump.speed}
-                                onChange={(e) => updateDosingSpeed(index, parseInt(e.target.value))}
-                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
-                            />
-                            <button
-                                onClick={() => startDosing(index, 5000)}
-                                disabled={pump.speed === 0}
-                                className="mt-2 w-full py-2 bg-purple-600 text-white rounded-lg font-medium text-sm hover:bg-purple-700 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                            >
-                                <PlayCircle className="w-4 h-4" />
-                                {t('dose5s')}
-                            </button>
+                            <div className="grid grid-cols-3 gap-2">
+                                <button
+                                    onClick={() => startDosing(index, 1000)}
+                                    className="py-2 bg-purple-100 text-purple-700 rounded-lg font-medium text-sm hover:bg-purple-200 active:scale-95 transition-all flex items-center justify-center gap-1"
+                                >
+                                    <PlayCircle className="w-4 h-4" /> 1s
+                                </button>
+                                <button
+                                    onClick={() => startDosing(index, 5000)}
+                                    className="py-2 bg-purple-600 text-white rounded-lg font-medium text-sm hover:bg-purple-700 active:scale-95 transition-all flex items-center justify-center gap-1"
+                                >
+                                    <PlayCircle className="w-4 h-4" /> 5s
+                                </button>
+                                <button
+                                    onClick={() => startDosing(index, 10000)}
+                                    className="py-2 bg-purple-800 text-white rounded-lg font-medium text-sm hover:bg-purple-900 active:scale-95 transition-all flex items-center justify-center gap-1"
+                                >
+                                    <PlayCircle className="w-4 h-4" /> 10s
+                                </button>
+                            </div>
                         </div>
                     ))}
                 </div>

@@ -1,8 +1,9 @@
 import React from 'react';
 import SensorCard from './SensorCard';
 import ControlPanel from './ControlPanel';
-import { Settings, Wifi, WifiOff } from 'lucide-react';
+import { Settings, Wifi, WifiOff, AlertTriangle } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { isGithubPages } from '../services/api';
 
 export default function Dashboard({ systemData, isConnected }) {
     const { t } = useLanguage();
@@ -89,11 +90,19 @@ export default function Dashboard({ systemData, isConnected }) {
                     <h1 className="text-2xl font-bold text-gray-900">{t('adminTitle')}</h1>
                     <p className={`text-sm flex items-center gap-1 ${isConnected ? 'text-green-600' : 'text-red-600'}`}>
                         {isConnected ? (
-                            <>
-                                <Wifi className="w-4 h-4" />
-                                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                                {t('systemOnlineRaw')}
-                            </>
+                            isGithubPages ? (
+                                <>
+                                    <AlertTriangle className="w-4 h-4 text-orange-500" />
+                                    <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
+                                    <span className="text-orange-600 font-semibold">Live Demo Mode (Simulated Data)</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Wifi className="w-4 h-4" />
+                                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                                    {t('systemOnlineRaw')}
+                                </>
+                            )
                         ) : (
                             <>
                                 <WifiOff className="w-4 h-4" />
