@@ -40,6 +40,7 @@ system_state: Dict[str, Any] = {
         "dose_a": False,
         "dose_b": False
     },
+    "firmware_version": "2.0.1 (Update Pending...)",
     # Actuator states (kept in sync with hardware via MQTT)
     "solenoids": [False] * 8,       # 8 solenoid valves
     "circulation_pumps": [False] * 6,  # 6 circulation pumps
@@ -223,6 +224,7 @@ class TelemetryReport(BaseModel):
     air_temp: Optional[float] = None
     humidity: Optional[float] = None
     water_level: Optional[float] = None
+    firmware_version: Optional[str] = None
 
 # Configuration endpoints
 @app.get("/api/config")
@@ -310,6 +312,8 @@ def report_telemetry(report: TelemetryReport):
         humidity=report.humidity,
         water_level=report.water_level
     )
+    if report.firmware_version:
+        system_state["firmware_version"] = report.firmware_version
     return {"status": "ok"}
 
 @app.get("/api/firmware/check")
@@ -317,8 +321,8 @@ def check_firmware(request: Request):
     """Check for firmware updates"""
     base_url = str(request.base_url).rstrip('/')
     return {
-        "version": "2.0.0",
-        "url": f"{base_url}/api/firmware/download/2.0.0"
+        "version": "2.0.2",
+        "url": f"{base_url}/api/firmware/download/2.0.2"
     }
 
 @app.get("/api/firmware/download/{version}")

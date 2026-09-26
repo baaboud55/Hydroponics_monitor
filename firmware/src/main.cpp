@@ -60,6 +60,7 @@ std::vector<WebsocketsClient> wsClients;
 
 String getApiStateJson() {
     StaticJsonDocument<1024> doc;
+    doc["firmware_version"] = "2.0.2";
     doc["ph"] = sensors.getPH();
     doc["ec"] = sensors.getEC();
     doc["waterTemp"] = sensors.getWaterTemp();

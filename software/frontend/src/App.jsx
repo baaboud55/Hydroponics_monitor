@@ -192,6 +192,14 @@ function App() {
                 <Globe className="w-4 h-4" />
                 {lang === 'en' ? 'عربي' : 'English'}
             </button>
+            
+            {/* Global Firmware Version Indicator */}
+            <div className="fixed bottom-6 start-6 z-[100] px-4 py-2 rounded-full border border-slate-700 bg-slate-900/90 text-sm font-medium transition-colors shadow-2xl backdrop-blur-md flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${systemData?.firmware_version === '2.0.2' ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`}></div>
+                <span className={systemData?.firmware_version === '2.0.2' ? 'text-emerald-400' : 'text-amber-400'}>
+                    Firmware: {systemData?.firmware_version || '2.0.0 (Update Pending...)'}
+                </span>
+            </div>
             <Suspense fallback={
                 <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-center text-emerald-500">
                     <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4"></div>
