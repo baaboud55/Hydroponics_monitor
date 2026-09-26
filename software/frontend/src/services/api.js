@@ -1,0 +1,163 @@
+// API Service for Backend Communication
+const hostname = window.location.hostname;
+const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+export const isGithubPages = hostname.includes('github.io');
+
+// When developing locally, point to the local Python backend.
+// When on github pages, point to the ESP32 (or change as needed).
+const API_BASE_URL = isLocalhost ? 'http://localhost:8000' : (isGithubPages ? 'http://hydromonitor.local' : '');
+
+export const api = {
+    // Get current system state
+    getState: async () => {
+        const response = await fetch(`${API_BASE_URL}/api/state`);
+        return await response.json();
+    },
+
+    // Get complete configuration
+    getConfig: async () => {
+        const response = await fetch(`${API_BASE_URL}/api/config`);
+        return await response.json();
+    },
+
+    // Update parameter configuration
+    updateParameter: async (parameter, updates) => {
+        const response = await fetch(`${API_BASE_URL}/api/config/parameter`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ parameter, ...updates })
+        });
+        if (!response.ok) throw new Error('Failed to update parameter');
+        return await response.json();
+    },
+
+    // Set active crop
+    setActiveCrop: async (cropId) => {
+        const id = cropId || 'none';
+        const response = await fetch(`${API_BASE_URL}/api/config/crop/${id}`, {
+            method: 'POST'
+        });
+        if (!response.ok) throw new Error('Failed to set active crop');
+        return await response.json();
+    },
+
+    // Toggle automation for a parameter
+    toggleAutomation: async (parameter, enabled) => {
+        const response = await fetch(`${API_BASE_URL}/api/config/parameter`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ parameter, enabled })
+        });
+        if (!response.ok) throw new Error('Failed to toggle automation');
+        return await response.json();
+    },
+
+    // Get dosing history
+    getDosingHistory: async (limit = 50) => {
+        const response = await fetch(`${API_BASE_URL}/api/dosing/history?limit=${limit}`);
+        return await response.json();
+    },
+
+    // Get historical data
+    getHistory: async (startTime, endTime) => {
+        let url = `${API_BASE_URL}/api/history`;
+        const params = new URLSearchParams();
+        if (startTime) params.append('start_time', startTime);
+        if (endTime) params.append('end_time', endTime);
+        if (params.toString()) {
+            url += `?${params.toString()}`;
+        }
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Failed to fetch history');
+        return await response.json();
+    },
+
+    // Manual dosing
+    manualDose: async (pumpIndex, durationMs, speed = 100) => {
+        const response = await fetch(`${API_BASE_URL}/api/dosing/manual`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pump_index: pumpIndex, duration_ms: durationMs, speed: speed })
+        });
+        if (!response.ok) throw new Error('Failed to trigger manual dose');
+        return await response.json();
+    },
+
+    // Reset PID controllers
+    resetControllers: async () => {
+        const response = await fetch(`${API_BASE_URL}/api/dosing/reset`, {
+            method: 'POST'
+        });
+        return await response.json();
+    },
+
+    // --- Calibration ---
+    sendCalibration: async (sensor, command) => {
+        const response = await fetch(`${API_BASE_URL}/api/calibrate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sensor, command })
+        });
+        if (!response.ok) throw new Error(`Failed to send calibration command to ${sensor}`);
+        return await response.json();
+    },
+
+    // --- Actuator Controls ---
+
+    // Toggle solenoid valve (index 0-7)
+    toggleSolenoid: async (index, state) => {
+        const response = await fetch(`${API_BASE_URL}/api/actuators/solenoid/${index}/${state}`, {
+            method: 'POST'
+        });
+        if (!response.ok) throw new Error(`Failed to toggle solenoid ${index}`);
+        return await response.json();
+    },
+
+    // Toggle circulation pump (index 0-5)
+    togglePump: async (index, state) => {
+        const response = await fetch(`${API_BASE_URL}/api/actuators/pump/${index}/${state}`, {
+            method: 'POST'
+        });
+        if (!response.ok) throw new Error(`Failed to toggle pump ${index}`);
+        return await response.json();
+    },
+
+    // Toggle main pump
+    toggleMainPump: async (state) => {
+        const response = await fetch(`${API_BASE_URL}/api/actuators/main_pump/${state}`, {
+            method: 'POST'
+        });
+        if (!response.ok) throw new Error('Failed to toggle main pump');
+        return await response.json();
+    },
+
+    connectWebSocket: (onMessage) => {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        // If developing locally, connect to Python on 8000. 
+        // If on GitHub Pages, connect to ESP32 on hydromonitor.local:81
+        // Else (served from ESP32 directly), connect to ESP32 on port 81.
+        const wsUrl = isLocalhost ? `ws://localhost:8000/ws` : (isGithubPages ? `ws://hydromonitor.local:81/` : `ws://${window.location.hostname}:81/`);
+        const ws = new WebSocket(wsUrl);
+
+        ws.onopen = () => {
+            console.log('WebSocket connected');
+        };
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            onMessage(data);
+        };
+
+        ws.onerror = (error) => {
+            console.error('WebSocket error:', error);
+        };
+
+        ws.onclose = () => {
+            console.log('WebSocket disconnected');
+            // Fixed: was calling undefined `connectWebSocket`, now calls `api.connectWebSocket`
+            setTimeout(() => api.connectWebSocket(onMessage), 3000);
+        };
+
+        return ws;
+    }
+};

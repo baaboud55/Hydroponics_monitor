@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقرير المشروع - نظام الزراعة المائية</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans Arabic', Arial, sans-serif;
+            direction: rtl;
+            text-align: right;
+            line-height: 1.8;
+            padding: 60px 80px;
+            max-width: 1000px;
+            margin: 0 auto;
+            color: #333;
+            background: white;
+        }
+        
+        h1 {
+            color: #2c5f2d;
+            border-bottom: 4px solid #97bc62;
+            padding-bottom: 15px;
+            margin: 40px 0 25px 0;
+            font-size: 2.2em;
+            page-break-after: avoid;
+        }
+        
+        h2 {
+            color: #2c5f2d;
+            border-bottom: 2px solid #d4e5c7;
+            padding-bottom: 10px;
+            margin: 35px 0 20px 0;
+            font-size: 1.8em;
+            page-break-after: avoid;
+        }
+        
+        h3 {
+            color: #4a7c4e;
+            margin: 25px 0 15px 0;
+            font-size: 1.4em;
+            page-break-after: avoid;
+        }
+        
+        p {
+            margin: 12px 0;
+            text-align: justify;
+        }
+        
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 25px 0;
+            direction: rtl;
+            page-break-inside: avoid;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 14px 16px;
+            text-align: right;
+        }
+        
+        th {
+            background-color: #2c5f2d;
+            color: white;
+            font-weight: bold;
+            font-size: 1.05em;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        tr:hover {
+            background-color: #f0f7f0;
+        }
+        
+        code {
+            background-color: #f5f5f5;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Courier Prime', 'Courier New', monospace;
+            direction: ltr;
+            display: inline-block;
+            font-size: 0.9em;
+            color: #c7254e;
+            border: 1px solid #e1e1e8;
+        }
+        
+        pre {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            direction: ltr;
+            border: 1px solid #e1e1e8;
+            margin: 20px 0;
+            page-break-inside: avoid;
+        }
+        
+        pre code {
+            background: none;
+            padding: 0;
+            border: none;
+            color: #333;
+        }
+        
+        ul, ol {
+            margin: 18px 0;
+            padding-right: 35px;
+        }
+        
+        li {
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+        
+        blockquote {
+            border-right: 5px solid #2c5f2d;
+            padding: 15px 25px;
+            margin: 25px 0;
+            background-color: #f0f7f0;
+            border-radius: 5px;
+            page-break-inside: avoid;
+        }
+        
+        blockquote p {
+            margin: 8px 0;
+        }
+        
+        hr {
+            border: none;
+            border-top: 3px solid #d4e5c7;
+            margin: 40px 0;
+        }
+        
+        a {
+            color: #2c5f2d;
+            text-decoration: none;
+            border-bottom: 1px dotted #2c5f2d;
+        }
+        
+        a:hover {
+            border-bottom: 1px solid #2c5f2d;
+        }
+        
+        /* Print styles */
+        @media print {
+            body {
+                padding: 40px;
+            }
+            
+            @page {
+                margin: 2cm;
+                size: A4;
+            }
+            
+            h1, h2, h3 {
+                page-break-after: avoid;
+            }
+            
+            table, figure, img {
+                page-break-inside: avoid;
+            }
+        }
+        
+        /* RTL specific fixes */
+        [dir="ltr"] {
+            text-align: left;
+            direction: ltr;
+        }
+        
+        /* Emoji support */
+        .emoji {
+            font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+        }
+    </style>
+</head>
+<body>
+<h1>تقرير المشروع: نظام مراقبة وأتمتة الزراعة المائية</h1>
+<h2>مقدمة: ما هي الزراعة المائية؟</h2>
+<p><strong>الزراعة المائية</strong> هي طريقة زراعة النباتات بدون تربة، حيث تنمو النباتات في محلول مائي غني بالعناصر الغذائية. تعتمد هذه التقنية على توفير جميع العناصر اللازمة للنمو (النيتروجين، الفسفور، البوتاسيوم، وغيرها) مباشرة في الماء.</p>
+<h3>لماذا الزراعة المائية؟</h3>
+<ul>
+<li>✅ <strong>توفير الماء</strong>: تستخدم ماء أقل بنسبة 90% من الزراعة التقليدية</li>
+<li>✅ <strong>نمو أسرع</strong>: تنمو النباتات بشكل أسرع بنسبة 30-50%</li>
+<li>✅ <strong>إنتاجية أعلى</strong>: يمكن زراعة كمية أكبر في مساحة أقل</li>
+<li>✅ <strong>تحكم دقيق</strong>: يمكن التحكم بالبيئة بدقة (درجة الحموضة، التغذية، الحرارة)</li>
+<li>✅ <strong>لا تحتاج تربة</strong>: مناسبة للمناطق الصحراوية أو الحضرية</li>
+</ul>
+<h3>التحديات</h3>
+<p>لكن الزراعة المائية تحتاج <strong>مراقبة دقيقة ومستمرة</strong> لعدة عوامل:<br />
+- <strong>درجة الحموضة</strong>: يجب أن تكون بين 5.5 - 6.5 لامتصاص أمثل للعناصر<br />
+- <strong>التوصيل الكهربائي</strong>: يقيس تركيز العناصر الغذائية المذابة في الماء<br />
+- <strong>درجة حرارة الماء</strong>: المثالية بين 18 - 22 درجة مئوية<br />
+- <strong>مستوى الماء</strong>: للتأكد من عدم نفاد المحلول الغذائي</p>
+<p><strong>هنا يأتي دور مشروعنا!</strong> 🚀</p>
+<hr />
+<h2>هدف المشروع</h2>
+<p>بناء <strong>نظام مراقبة وأتمتة ذكي</strong> للزراعة المائية يقوم بـ:</p>
+<ol>
+<li><strong>المراقبة التلقائية</strong> لجميع المعايير المهمة (الحموضة، التوصيل الكهربائي، درجة الحرارة، الرطوبة، وغيرها)</li>
+<li><strong>التحكم الآلي</strong> في المضخات والصمامات لضبط المحلول الغذائي تلقائياً</li>
+<li><strong>الإنذارات الفورية</strong> عند حدوث أي مشكلة (مستوى ماء منخفض، حموضة غير مناسبة، وغيرها)</li>
+<li><strong>واجهة مستخدم سهلة</strong> على الهاتف المحمول لمراقبة النظام من أي مكان (يمكن تثبيتها كتطبيق)</li>
+<li><strong>قواعد ذكية جاهزة</strong> مبرمجة مسبقاً للمبتدئين (مثل: إذا انخفضت الحموضة، أضف محلول رفع الحموضة تلقائياً)</li>
+</ol>
+<hr />
+<h2>العتاد المستخدم</h2>
+<p>نستخدم لوحة <strong>هايدروميسك</strong> المبنية على معالج <strong>إي إس بي 32</strong>، وهي مصممة خصيصاً للزراعة المائية:</p>
+<h3>المستشعرات</h3>
+<ul>
+<li>📊 <strong>مستشعر الحموضة</strong> (عدد 2): لقياس درجة حموضة الماء بدقة</li>
+<li>📊 <strong>مستشعر التوصيل الكهربائي</strong> (عدد 2): لقياس تركيز الأملاح المعدنية والعناصر الغذائية</li>
+<li>🌡️ <strong>مستشعر حرارة رقمي</strong> (دي إس 18 بي 20): لقياس درجة حرارة الماء</li>
+<li>🌡️ <strong>مستشعر الحرارة والرطوبة</strong> (إيه إم 2301): لقياس درجة حرارة ورطوبة الهواء المحيط</li>
+<li>📏 <strong>مستشعر مستوى الماء</strong>: للتحقق من كمية الماء في الخزان</li>
+<li>⚡ <strong>مستشعر التيار الكهربائي</strong>: لمراقبة استهلاك المضخات واكتشاف الأعطال</li>
+</ul>
+<h3>المحركات والمتحكمات</h3>
+<ul>
+<li>💧 <strong>8 صمامات كهربائية</strong>: للتحكم في فتح وإغلاق تدفق المحاليل المختلفة</li>
+<li>🔄 <strong>6 مضخات عادية</strong>: للري وتدوير المحلول الغذائي</li>
+<li>💉 <strong>4 مضخات دقيقة</strong>: لإضافة المحاليل المركزة بكميات صغيرة ومحددة (محلول رفع الحموضة، محلول خفض الحموضة، محلول أ، محلول ب)</li>
+<li>💡 <strong>مضخة كبيرة</strong>: للعمليات الرئيسية مثل ملء الخزان</li>
+</ul>
+<h3>آلية التحكم</h3>
+<ul>
+<li>استخدام <strong>سجل الإزاحة</strong> (شريحة 74HC595) للتحكم بـ 16 مُخرج باستخدام 4 أطراف فقط من المعالج</li>
+<li>التحكم بسرعة المضخات الدقيقة عن طريق <strong>تعديل عرض النبضة</strong> (تقنية بي دبليو إم)</li>
+</ul>
+<blockquote>
+<p>[!NOTE]<br />
+لدينا <a href="file:///d:/Github/HydroMonitor/docs/pinout.md">ملف توثيق كامل</a> يحتوي على جميع توصيلات GPIO للعتاد</p>
+</blockquote>
+<hr />
+<h2>معمارية النظام</h2>
+<p>المشروع مقسم إلى <strong>ثلاثة أجزاء رئيسية</strong> تعمل معاً بشكل متكامل:</p>
+<pre><code class="language-mermaid">flowchart TB
+    subgraph Hardware[&quot;🔧 العتاد - Hydromisc (ESP32)&quot;]
+        sensors[المستشعرات&lt;br/&gt;pH, EC, Temp, etc.]
+        actuators[المضخات والصمامات]
+        firmware[البرمجية المدمجة&lt;br/&gt;Firmware]
+    end
+
+    subgraph Backend[&quot;🧠 الخادم - Backend&quot;]
+        mqtt[MQTT Broker&lt;br/&gt;Mosquitto]
+        api[Python FastAPI&lt;br/&gt;+ Smart Rules]
+        db[(قاعدة البيانات&lt;br/&gt;SQLite)]
+    end
+
+    subgraph Frontend[&quot;📱 الواجهة - PWA&quot;]
+        dashboard[لوحة التحكم&lt;br/&gt;Dashboard]
+        controls[أزرار التحكم&lt;br/&gt;Manual Override]
+    end
+
+    sensors --&gt; firmware
+    firmware --&gt; actuators
+    firmware &lt;--&gt;|MQTT| mqtt
+    mqtt &lt;--&gt; api
+    api --&gt; db
+    dashboard &lt;--&gt;|WebSocket| api
+    controls &lt;--&gt;|REST API| api
+
+    style Hardware fill:#e1f5ff
+    style Backend fill:#fff3e0
+    style Frontend fill:#f3e5f5
+</code></pre>
+<h3>1️⃣ البرمجية المدمجة (الكود المثبت على المعالج)</h3>
+<ul>
+<li><strong>لغة البرمجة</strong>: سي بلس بلس باستخدام منصة بلاتفورم آي أو</li>
+<li><strong>الوظائف الرئيسية</strong>:</li>
+<li>قراءة جميع المستشعرات كل عدة ثوانٍ</li>
+<li>إرسال القراءات عبر بروتوكول الاتصال إم كيو تي تي</li>
+<li>استقبال الأوامر للتحكم بالمضخات والصمامات</li>
+<li>الحماية التلقائية (مثل إيقاف المضخة تلقائياً إذا عملت لفترة طويلة جداً)</li>
+</ul>
+<h3>2️⃣ الخادم (العقل المدبر للنظام)</h3>
+<ul>
+<li><strong>لغة البرمجة</strong>: بايثون باستخدام إطار فاست إيه بي آي</li>
+<li><strong>الوظائف الرئيسية</strong>:</li>
+<li>استقبال بيانات المستشعرات وحفظها في قاعدة البيانات</li>
+<li>تطبيق <strong>القواعد الذكية الآلية</strong> (مثال: إذا كانت الحموضة منخفضة → تشغيل مضخة رفع الحموضة تلقائياً)</li>
+<li>توفير اتصال سريع للواجهة للحصول على بيانات لحظية مباشرة</li>
+<li>توفير واجهة برمجية للتحكم اليدوي من الهاتف</li>
+</ul>
+<h3>3️⃣ واجهة المستخدم (التطبيق على الهاتف)</h3>
+<ul>
+<li><strong>التقنيات</strong>: تطبيق ويب تقدمي يعمل كتطبيق حقيقي</li>
+<li><strong>الوظائف الرئيسية</strong>:</li>
+<li>عرض جميع القراءات في لوحة تحكم جميلة وسهلة الاستخدام</li>
+<li>أزرار للتحكم اليدوي بالمضخات والصمامات</li>
+<li>معالج ذكي لمعايرة المستشعرات خطوة بخطوة</li>
+<li>يمكن تثبيتها كتطبيق على الهاتف المحمول وتعمل حتى بدون إنترنت</li>
+</ul>
+<hr />
+<h2>ما تم إنجازه حتى الآن ✅</h2>
+<h3>مرحلة التخطيط والبحث</h3>
+<ul>
+<li>✅ تحديد العتاد: اخترنا لوحة هايدروميسك كمنصة رئيسية</li>
+<li>✅ دراسة جميع المستشعرات والمحركات المتوفرة في اللوحة</li>
+<li>✅ <strong>توثيق كامل لتوصيلات الأطراف الإلكترونية</strong> (<a href="file:///d:/Github/HydroMonitor/docs/pinout.md">ملف التوصيلات</a>)</li>
+<li>✅ تصميم المعمارية الكاملة للنظام بجميع أجزائه</li>
+</ul>
+<h3>البرمجية المدمجة على المعالج</h3>
+<ul>
+<li>✅ إنشاء مشروع برمجي على منصة بلاتفورم آي أو</li>
+<li>✅ إعداد ملف التكوين (<a href="file:///d:/Github/HydroMonitor/firmware/platformio.ini">ملف الإعدادات</a>)</li>
+<li>🔄 <strong>جارٍ العمل</strong>: تطبيق التحكم بالمضخات الدقيقة عبر تعديل عرض النبضة</li>
+<li>🔄 <strong>جارٍ العمل</strong>: تطبيق نظام الاتصال بالشبكة اللاسلكية بسهولة للمستخدم</li>
+<li>🔄 <strong>جارٍ العمل</strong>: برمجة سجل الإزاحة للتحكم بالصمامات والمضخات</li>
+<li>📝 <strong>قادم</strong>: تطبيق بروتوكول الاتصال وإرسال بيانات المستشعرات</li>
+</ul>
+<h3>الخادم (البرنامج الوسيط)</h3>
+<ul>
+<li>✅ إعداد الخادم بلغة بايثون مع إطار العمل السريع</li>
+<li>✅ تطبيق الاتصال اللحظي السريع للبيانات المباشرة</li>
+<li>✅ تطبيق <strong>القواعد الذكية الجاهزة</strong> للمبتدئين</li>
+<li>✅ الكود جاهز وقابل للتشغيل (<a href="file:///d:/Github/HydroMonitor/software/backend/main.py">ملف الكود الرئيسي</a>)</li>
+</ul>
+<h3>واجهة المستخدم (التطبيق)</h3>
+<ul>
+<li>✅ إنشاء مشروع تطبيق الويب التقدمي</li>
+<li>✅ إعداد نظام التصميم الجميل</li>
+<li>✅ إعداده كتطبيق قابل للتثبيت على الهاتف</li>
+<li>✅ <strong>تصميم لوحة التحكم الكاملة</strong> مع جميع المستشعرات:</li>
+<li>مستشعرات المحلول الغذائي (الحموضة، التوصيل الكهربائي، حرارة الماء، مستوى الماء)</li>
+<li>مستشعرات البيئة المحيطة (حرارة الهواء، الرطوبة، ضغط البخار)</li>
+<li>مراقبة صحة النظام (استهلاك المضخات الكهربائي)</li>
+<li>✅ أزرار التحكم السريع لتشغيل المضخات يدوياً</li>
+<li>📝 <strong>قادم</strong>: ربط الواجهة بالخادم للحصول على بيانات حقيقية</li>
+<li>📝 <strong>قادم</strong>: معالج المعايرة الذكي خطوة بخطوة</li>
+</ul>
+<blockquote>
+<p>[!TIP]<br />
+يمكنك الاطلاع على مخطط المهام الكامل في <a href="file:///d:/Github/HydroMonitor/docs/task.md">task.md</a></p>
+</blockquote>
+<hr />
+<h2>ما المطلوب إنجازه (الخطوات القادمة) 📋</h2>
+<h3>أولوية عالية 🔥</h3>
+<ol>
+<li>
+<p><strong>إكمال البرمجية المدمجة على المعالج</strong>:<br />
+   - حل مشكلة التجميع الحالية للمضخات الدقيقة<br />
+   - تطبيق نظام الاتصال السهل بالشبكة اللاسلكية<br />
+   - برمجة شريحة سجل الإزاحة<br />
+   - تطبيل بروتوكول الاتصال بالخادم</p>
+</li>
+<li>
+<p><strong>اختبار التكامل بين الأجزاء</strong>:<br />
+   - التأكد من إرسال البيانات من المعالج إلى الخادم بنجاح<br />
+   - ربط تطبيق الهاتف بالخادم</p>
+</li>
+</ol>
+<h3>أولوية متوسطة 🟡</h3>
+<ol start="3">
+<li>
+<p><strong>إضافة ميزات التحكم</strong>:<br />
+   - لوحة التحكم بالمضخات والصمامات من التطبيق<br />
+   - معالج ذكي لمعايرة المستشعرات خطوة بخطوة</p>
+</li>
+<li>
+<p><strong>القواعد الذكية والأتمتة</strong>:<br />
+   - تطبيق السيناريوهات التلقائية (إضافة المحاليل تلقائياً)<br />
+   - إنذارات فورية عند وجود مشاكل عبر إشعارات الهاتف</p>
+</li>
+</ol>
+<h3>أولوية منخفضة 🟢</h3>
+<ol start="5">
+<li><strong>التحسينات والإضافات</strong>:<br />
+   - حفظ البيانات التاريخية ورسمها بيانياً<br />
+   - إضافة ميزات متقدمة حسب الحاجة</li>
+</ol>
+<hr />
+<h2>الفائدة المتوقعة من المشروع 🎯</h2>
+<p>هذا النظام سيوفر:<br />
+- ⏱️ <strong>توفير الوقت</strong>: لا حاجة لقياس الحموضة والتوصيل الكهربائي يدوياً كل يوم<br />
+- 🎯 <strong>دقة أعلى</strong>: النظام يراقب على مدار الساعة ويتدخل فوراً عند الحاجة<br />
+- 📊 <strong>بيانات تاريخية شاملة</strong>: لتحليل أداء النباتات وتحسين الإنتاجية باستمرار<br />
+- 🔔 <strong>راحة البال</strong>: إشعارات فورية على الهاتف عند وجود مشاكل حتى لو كنت خارج المنزل<br />
+- 🚀 <strong>قابلية التوسع</strong>: يمكن إضافة المزيد من الأحواض أو الميزات لاحقاً بسهولة</p>
+<hr />
+<h2>التقنيات والأدوات المستخدمة 🛠️</h2>
+<table>
+<thead>
+<tr>
+<th>المجال</th>
+<th>التقنية</th>
+<th>الغرض</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>العتاد</strong></td>
+<td>معالج إي إس بي 32 (لوحة هايدروميسك)</td>
+<td>معالج قوي مع شبكة لاسلكية مدمجة</td>
+</tr>
+<tr>
+<td><strong>البرمجية المدمجة</strong></td>
+<td>منصة بلاتفورم آي أو + إطار أردوينو</td>
+<td>بيئة برمجة احترافية للمعالجات</td>
+</tr>
+<tr>
+<td><strong>بروتوكول الاتصال</strong></td>
+<td>إم كيو تي تي (موسكيتو)</td>
+<td>بروتوكول خفيف وسريع لتبادل البيانات</td>
+</tr>
+<tr>
+<td><strong>الخادم</strong></td>
+<td>بايثون + إطار فاست إيه بي آي</td>
+<td>خادم سريع وعصري للواجهات البرمجية</td>
+</tr>
+<tr>
+<td><strong>قاعدة البيانات</strong></td>
+<td>إس كيو إل لايت</td>
+<td>تخزين البيانات محلياً بدون تعقيد</td>
+</tr>
+<tr>
+<td><strong>واجهة المستخدم</strong></td>
+<td>ريآكت + فايت + تيلويند</td>
+<td>إطار عمل سريع لواجهات جميلة</td>
+</tr>
+<tr>
+<td><strong>نوع التطبيق</strong></td>
+<td>تطبيق ويب تقدمي</td>
+<td>يعمل على الهاتف كتطبيق حقيقي</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>كيف يمكنك المساعدة؟ 🤝</h2>
+<p>يمكنك المساهمة في عدة مجالات:</p>
+<ol>
+<li>
+<p><strong>اختبار وتجربة العتاد</strong>: <br />
+   - التأكد من توصيل المستشعرات بشكل صحيح على اللوحة<br />
+   - اختبار عمل المضخات والصمامات الكهربائية<br />
+   - قياس دقة قراءات المستشعرات</p>
+</li>
+<li>
+<p><strong>تطوير وكتابة الأكواد البرمجية</strong>:<br />
+   - المساعدة في حل مشاكل التجميع والبرمجة<br />
+   - كتابة اختبارات تلقائية للكود<br />
+   - إضافة ميزات جديدة للنظام<br />
+   - تحسين الأداء وتحسين الكود</p>
+</li>
+<li>
+<p><strong>تصميم واجهة المستخدم</strong>:<br />
+   - تحسين التصميم وتجربة المستخدم<br />
+   - إضافة رسوم بيانية تفاعلية للبيانات التاريخية<br />
+   - تحسين سهولة الاستخدام على الهاتف</p>
+</li>
+<li>
+<p><strong>كتابة التوثيق</strong>:<br />
+   - كتابة دليل شامل للمستخدمين<br />
+   - إنشاء فيديوهات توضيحية لطريقة الاستخدام<br />
+   - ترجمة الواجهة للغة العربية<br />
+   - كتابة أمثلة وحالات استخدام عملية</p>
+</li>
+</ol>
+<hr />
+<h2>الخلاصة 📝</h2>
+<p><strong>نظام مراقبة وأتمتة الزراعة المائية</strong> هو مشروع طموح يهدف لجعل الزراعة المائية <strong>أسهل وأكثر ذكاءً</strong> من خلال:<br />
+- مراقبة تلقائية مستمرة لجميع المعايير المهمة<br />
+- تحكم آلي ذكي بالمحاليل الغذائية<br />
+- واجهة سهلة وجميلة على الهاتف المحمول</p>
+<p>تم إنجاز <strong>أكثر من 60%</strong> من المشروع، والآن نحتاج للتركيز على <strong>ربط الأجزاء الثلاثة</strong> (البرمجية المدمجة، الخادم، واجهة المستخدم) واختبار النظام بشكل كامل.</p>
+<hr />
+<blockquote>
+<p>[!IMPORTANT]<br />
+<strong>للمزيد من التفاصيل التقنية:</strong><br />
+- <a href="file:///d:/Github/HydroMonitor/docs/implementation_plan.md">خطة التنفيذ الكاملة</a><br />
+- <a href="file:///d:/Github/HydroMonitor/docs/task.md">مخطط المهام</a><br />
+- <a href="file:///d:/Github/HydroMonitor/docs/pinout.md">توثيق التوصيلات</a><br />
+- <a href="file:///d:/Github/HydroMonitor/docs/walkthrough.md">ملخص الإنجازات</a></p>
+</blockquote>
+<hr />
+<p><strong>نرحب بمساعدتك في إكمال هذا المشروع! 🌱💚</strong></p>
+<hr>
+<p style="text-align: center; color: #888; font-size: 0.9em; margin-top: 40px;">
+    تم إنشاء هذا التقرير باستخدام نظام HydroMonitor
+</p>
+</body>
+</html>

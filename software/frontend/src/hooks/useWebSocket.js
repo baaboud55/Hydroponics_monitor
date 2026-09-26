@@ -1,0 +1,111 @@
+import { useState, useEffect, useRef } from 'react';
+
+/**
+ * Custom hook that polls backend API instead of WebSockets
+ * Provides real-time sensor data and connection status
+ */
+export function useWebSocket() {
+    const [data, setData] = useState(null);
+    const [isConnected, setIsConnected] = useState(false);
+    const [error, setError] = useState(null);
+    const { getState } = useBackendAPI();
+
+    useEffect(() => {
+        let isMounted = true;
+        let timeoutId = null;
+
+        const poll = async () => {
+            try {
+                const result = await getState();
+                if (isMounted) {
+                    setData(result);
+                    setIsConnected(true);
+                    setError(null);
+                }
+            } catch (err) {
+                if (isMounted) {
+                    setIsConnected(false);
+                    setError('Connection error');
+                }
+            }
+            if (isMounted) {
+                timeoutId = setTimeout(poll, 2000);
+            }
+        };
+
+        poll();
+
+        return () => {
+            isMounted = false;
+            if (timeoutId) clearTimeout(timeoutId);
+        };
+    }, []);
+
+    return { data, isConnected, error };
+}
+
+/**
+ * Hook for sending API requests to backend
+ */
+export function useBackendAPI() {
+    // Auto-detect if we are running off-device (e.g. dev server, github pages)
+    const hostname = window.location.hostname;
+    const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+    const isGithubPages = hostname.includes('github.io');
+    
+    // When developing locally, point to the local Python backend.
+    const baseURL = isLocalhost ? 'http://localhost:8000' : (isGithubPages ? 'http://hydromonitor.local' : '');
+
+    const manualDose = async (pumpIndex, durationMs) => {
+        try {
+            const response = await fetch(`${baseURL}/api/dosing/manual`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    pump_index: pumpIndex,
+                    duration_ms: durationMs,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log('Dose command sent:', result);
+            return result;
+        } catch (error) {
+            console.error('Failed to send dose command:', error);
+            throw error;
+        }
+    };
+
+    const getState = async () => {
+        try {
+            const response = await fetch(`${baseURL}/api/state`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            
+            // Map automation_config to automation_status for the UI if coming from HTTP
+            if (data.automation_config) {
+                data.automation_status = {
+                    ...data.automation_config,
+                    current: {
+                        ph: data.ph,
+                        ec: data.ec
+                    }
+                };
+            }
+            return data;
+        } catch (error) {
+            console.error('Failed to fetch state:', error);
+            throw error;
+        }
+    };
+
+    return { manualDose, getState };
+}

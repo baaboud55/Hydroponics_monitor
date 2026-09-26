@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/Hydroponics_monitor/app/sw.js', { scope: '/Hydroponics_monitor/app/' })})}
