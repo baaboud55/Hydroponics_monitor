@@ -311,19 +311,76 @@ flowchart LR
 
 ### 🔌 Exact Software-to-Hardware Mapping
 
-When you click a button in the HydroMisc Web Dashboard, the software activates a specific port on the board. Use this table to wire your hardware correctly so it works instantly!
+When you click a button in the HydroMisc Web Dashboard, the software activates a specific port on the board. Follow this diagram to wire your hardware correctly so it works instantly!
 
-| 🖥️ Software/Dashboard Control | 🔌 Physical PCB Port to Plug Into | ⚠️ Important Notes |
-|---------------------------------|-----------------------------------|-------------------|
-| **Main Pump** (Water Cycle)     | **Pump Port `#0`** (or `big_pump`) | Handles up to 0.5A. Plugs into the very first port in the "6x Pump" block. If your pump draws >0.5A, you must use a Relay connected to a Solenoid port instead! |
-| **Nutrient A** Doser            | **Dosing Port `A`**               | Has variable speed control. Do not exceed 0.25A. |
-| **Nutrient B** Doser            | **Dosing Port `B`**               | Has variable speed control. Do not exceed 0.25A. |
-| **pH Down** Doser               | **Dosing Port `pH`**              | Has variable speed control. Do not exceed 0.25A. |
-| **Auxiliary** Doser             | **Dosing Port `AUX`**             | Has variable speed control. Do not exceed 0.25A. |
-| **Solenoid Valves (0 to 7)**    | **Solenoid Ports `#0` to `#7`**   | 1.0A max per port. Pure ON/OFF control. |
-| **Circulation Pumps (1 to 5)**  | **Pump Ports `#1` to `#5`**       | 0.5A max per port. |
+```mermaid
+flowchart LR
+    %% Software Interface Layer
+    subgraph Dashboard[🖥️ HydroMisc Web Dashboard]
+        BtnMain[Main Pump Toggle]
+        BtnCirc[Circulation Pumps 1-5]
+        BtnSol[Solenoid Valves 0-7]
+        BtnDoseA[Nutrient A Auto-Dose]
+        BtnDoseB[Nutrient B Auto-Dose]
+        BtnDosePH[pH Down Auto-Dose]
+        BtnDoseAux[Aux Auto-Dose]
+    end
 
-> 🚨 **CRITICAL WIRING RULE:** Notice in the images that every single port block has its own dedicated `+12V` and `GND` screw terminal. **DO NOT twist your motor grounds together!** You must strip the two wires for each pump and screw them directly into their own dedicated block. Bridging grounds together forces all power through a single trace and will permanently burn out the PCB!
+    %% Hardware Board Layer
+    subgraph PCBA[🔌 Hydromisc PCBA Physical Ports]
+        PortP0[Pump Port #0<br/>labeled 'big_pump']
+        PortP15[Pump Ports #1-5]
+        PortS07[Solenoid Ports #0-7]
+        PortDA[Dosing Port A]
+        PortDB[Dosing Port B]
+        PortDPH[Dosing Port pH]
+        PortDAux[Dosing Port AUX]
+    end
+
+    %% Actuator Layer
+    subgraph Actuators[⚙️ Plug Your Hardware Here]
+        MainPump[Main Water Cycle Pump<br/>0.5A max]
+        CircPump[Air / Circ Pumps<br/>0.5A max]
+        Solenoid[Water Valves / Relays<br/>1.0A max]
+        PeriA[Peristaltic Pump A<br/>0.25A max]
+        PeriB[Peristaltic Pump B<br/>0.25A max]
+        PeriPH[Peristaltic Pump pH<br/>0.25A max]
+        PeriAux[Peristaltic Pump Aux<br/>0.25A max]
+    end
+
+    %% Connections
+    BtnMain == Triggers ==> PortP0
+    PortP0 -.-> MainPump
+    
+    BtnCirc == Triggers ==> PortP15
+    PortP15 -.-> CircPump
+    
+    BtnSol == Triggers ==> PortS07
+    PortS07 -.-> Solenoid
+    
+    BtnDoseA == Triggers ==> PortDA
+    PortDA -.-> PeriA
+    
+    BtnDoseB == Triggers ==> PortDB
+    PortDB -.-> PeriB
+    
+    BtnDosePH == Triggers ==> PortDPH
+    PortDPH -.-> PeriPH
+    
+    BtnDoseAux == Triggers ==> PortDAux
+    PortDAux -.-> PeriAux
+
+    %% Styling
+    classDef soft fill:#1e293b,stroke:#3b82f6,stroke-width:2px,color:#fff;
+    classDef hard fill:#14532d,stroke:#22c55e,stroke-width:2px,color:#fff;
+    classDef act fill:#450a0a,stroke:#ef4444,stroke-width:2px,color:#fff;
+    
+    class BtnMain,BtnCirc,BtnSol,BtnDoseA,BtnDoseB,BtnDosePH,BtnDoseAux soft;
+    class PortP0,PortP15,PortS07,PortDA,PortDB,PortDPH,PortDAux hard;
+    class MainPump,CircPump,Solenoid,PeriA,PeriB,PeriPH,PeriAux act;
+```
+
+> 🚨 **CRITICAL WIRING RULE:** Notice in the board images that every single port block has its own dedicated `+12V` and `GND` screw terminal. **DO NOT twist your motor grounds together!** You must strip the two wires for each pump and screw them directly into their own dedicated block. Bridging grounds together forces all power through a single trace and will permanently burn out the PCB!
 ![Sensor Side Pinout](https://raw.githubusercontent.com/hydromisc/hydromisc/master/doc/pcba-side-sensors.jpg)
 
 ```mermaid
