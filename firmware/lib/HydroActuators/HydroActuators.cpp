@@ -30,7 +30,7 @@ void HydroActuators::setPump(uint8_t index, bool state) {
 }
 
 void HydroActuators::setBigPump(bool state) {
-    _setBit(14, state); // Bit 14
+    _setBit(8, state); // Map Main Pump directly to physical Pump Port #0 (Bit 8)
 }
 
 void HydroActuators::setDebugLed(bool state) {
