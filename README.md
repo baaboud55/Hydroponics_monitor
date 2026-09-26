@@ -309,13 +309,21 @@ flowchart LR
     DosePH[pH Down Doser<br><250mA] -.-> D
 ```
 
-**Wiring Rules:**
-- **Solenoids (1.0A max per port):** Pure ON/OFF control for heavy-draw items like motorized ball valves or solenoid water valves.
-- **Pumps (0.5A max per port):** Features built-in current monitoring to detect dry-running. Use for circulation or air pumps. **Note:** If your dosing pumps draw more than 250mA, they *must* be connected here.
-- **Dosing Pumps (0.25A max per port):** Features analog voltage control for variable-speed, precise drop-by-drop dosing. Ensure your peristaltic pumps draw <250mA (stall current) before connecting here.
-- **Grounding Warning:** **DO NOT** bridge motor grounds together! Every motor must have its own dedicated `+` and `-` wire screwed into its designated terminal block. Bridging motor grounds forces all return current through a single thin PCB trace, which will cause the board to overheat and fail.
+### 🔌 Exact Software-to-Hardware Mapping
 
-### Sensor Side (Probes & Data)
+When you click a button in the HydroMisc Web Dashboard, the software activates a specific port on the board. Use this table to wire your hardware correctly so it works instantly!
+
+| 🖥️ Software/Dashboard Control | 🔌 Physical PCB Port to Plug Into | ⚠️ Important Notes |
+|---------------------------------|-----------------------------------|-------------------|
+| **Main Pump** (Water Cycle)     | **Pump Port `#0`** (or `big_pump`) | Handles up to 0.5A. Plugs into the very first port in the "6x Pump" block. If your pump draws >0.5A, you must use a Relay connected to a Solenoid port instead! |
+| **Nutrient A** Doser            | **Dosing Port `A`**               | Has variable speed control. Do not exceed 0.25A. |
+| **Nutrient B** Doser            | **Dosing Port `B`**               | Has variable speed control. Do not exceed 0.25A. |
+| **pH Down** Doser               | **Dosing Port `pH`**              | Has variable speed control. Do not exceed 0.25A. |
+| **Auxiliary** Doser             | **Dosing Port `AUX`**             | Has variable speed control. Do not exceed 0.25A. |
+| **Solenoid Valves (0 to 7)**    | **Solenoid Ports `#0` to `#7`**   | 1.0A max per port. Pure ON/OFF control. |
+| **Circulation Pumps (1 to 5)**  | **Pump Ports `#1` to `#5`**       | 0.5A max per port. |
+
+> 🚨 **CRITICAL WIRING RULE:** Notice in the images that every single port block has its own dedicated `+12V` and `GND` screw terminal. **DO NOT twist your motor grounds together!** You must strip the two wires for each pump and screw them directly into their own dedicated block. Bridging grounds together forces all power through a single trace and will permanently burn out the PCB!
 ![Sensor Side Pinout](https://raw.githubusercontent.com/hydromisc/hydromisc/master/doc/pcba-side-sensors.jpg)
 
 ```mermaid
